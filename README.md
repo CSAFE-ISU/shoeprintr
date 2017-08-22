@@ -20,10 +20,10 @@ How-To
 
     ## Perform Print Match
     print_stats <- match_print(print_in, print_ref,
-    						   ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
-    						   ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
-    						   eps = .75, seed = 1, num_cores = parallel::detectCores(), 
-    						   plot = TRUE, verbose = FALSE)
+			       ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
+			       ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
+			       eps = .75, seed = 1, num_cores = parallel::detectCores(), 
+			       plot = TRUE, verbose = TRUE)
     print_stats
 ```
 6. (Optional) We provide the `pmc` binary with the R package. If you would like to update this binary to use the latest development version, follow the instructions at the bottom of this README file.
