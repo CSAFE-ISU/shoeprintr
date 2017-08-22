@@ -1,0 +1,20 @@
+Package: shoeprintr
+Title: Performs an automated statistical matching of two shoeprints
+Version: 0.1
+Authors@R: c(
+    person("Soyoung", "Park", email = "sypark@iastate.edu", role = c("aut", "cre")),
+    person("Alicia", "Carriquiry", email = "alicia@iastate.edu", role = "aut"))
+Description: Implements a number of statistical routines in order to
+    quantitatively assess whether two shoeprints are a match. It does this by
+    using a maximum clique computation to find regions of each shoeprint which
+    are most similar. The output will then provide a number of statistics
+    assessing this similarity.
+Depends: R (>= 3.3)
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
+Imports: 
+    hexbin,
+    vec2dtransf,
+    sp
