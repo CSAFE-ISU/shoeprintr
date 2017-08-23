@@ -4,7 +4,7 @@ Shoeprint Boosted
 How-To
 ------
 1. Make sure you have the `devtools` package installed
-2. From R, run `devtools::install_github("drsoyoung/shoeprintr")`
+2. From R, run `devtools::install_github("CSAFE-ISU/shoeprintr")`
 3. (If running on the CSAFE server or another machine that restricts executing binary files) From a Terminal, run `chmod +x /home/username/R/x86_64-pc-linux-gnu-library/3.4/shoeprintr/bin/lin64/pmc` replacing the path as necessary
 4. From R, Load `shoeprintr` by typing `library(shoeprintr)`
 5. Run the following sample code, modifying the input files and parameters as necessary:
