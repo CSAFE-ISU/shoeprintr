@@ -406,12 +406,20 @@ match_print <- function(print_in, print_ref, ncross_in_bins = 30, xbins_in = 20,
     if (get_os() == "win64") cl <- makeCluster(num_cores, renice = 0)
     
     match_result <- lapply(1:nrow(match_grid), function(match_idx) {
-        cat(paste("Matching circle pair",match_idx,"out of 81...\n"))
-        boosted_clique(circle_in=match_grid[match_idx,2][[1]],circle_ref=match_grid[match_idx,1][[1]],
-                       ncross_in_bins=ncross_in_bins,xbins_in=xbins_in,ncross_in_bin_size=ncross_in_bin_size,
-                       ncross_ref_bins=ncross_ref_bins,xbins_ref=xbins_ref,ncross_ref_bin_size=ncross_ref_bin_size,
-                       eps=eps,seed=seed,num_cores=num_cores,plot=plot,verbose=verbose,cl=cl
-        )
+        cat(paste("Matching circle pair",match_idx,"out of", nrow(match_grid), "\n"))
+        
+        circle_in <- match_grid[match_idx,2][[1]]
+        circle_ref <- match_grid[match_idx,1][[1]]
+        
+        if (nrow(circle_ref) > 0) {
+            boosted_clique(circle_in, circle_ref, 
+                           ncross_in_bins=ncross_in_bins,xbins_in=xbins_in,ncross_in_bin_size=ncross_in_bin_size,
+                           ncross_ref_bins=ncross_ref_bins,xbins_ref=xbins_ref,ncross_ref_bin_size=ncross_ref_bin_size,
+                           eps=eps,seed=seed,num_cores=num_cores,plot=plot,verbose=verbose,cl=cl
+            )
+        } else {
+            cat("Skipping circle pair", match_idx, "due to no points contained\n")
+        }
     })
     ##############################################################################################################
     ##############################################################################################################
