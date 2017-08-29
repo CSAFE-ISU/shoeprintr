@@ -448,7 +448,7 @@ match_print <- function(print_in, print_ref, ncross_in_bins = 30, xbins_in = 20,
                        eps=eps,seed=seed,num_cores=num_cores,plot=plot,verbose=verbose,cl=cl
         )
     })
-    stopCluster(cl)
+    if (!is.null(cl)) stopCluster(cl)
     
     ##############################################################################################################
     ## Prepare plot and  return output
