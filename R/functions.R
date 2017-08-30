@@ -317,7 +317,11 @@ get_circle <- function(data,x_rt,y_rt,rad_pct)
 get_circle_fix <- function(x,y,rad_pct,data)
 {
     cir_center <- c(x,y)
-    cir_rad <-  min(apply(data,2,function(x) ((max(x)-min(x))/2)*rad_pct))
+    if (rad_pct <= 1) {
+        cir_rad <-  min(apply(data,2,function(x) ((max(x)-min(x))/2)*rad_pct))
+    } else {
+        cir_rad <- rad_pct
+    }
     return(as.data.frame(data[apply(data,1,function(x,cir_center,cir_rad) sqrt(sum((x-cir_center)^2))<cir_rad,cir_center,cir_rad),]))
 }
 
@@ -337,6 +341,7 @@ get_circle_rad_fix <- function(x,y,cir_rad,data)
 #' @name match_print
 #' @param print_in The input print
 #' @param print_ref The reference print
+#' @param circle_centers The circles, specified as a matrix with columns (x, y, rad), or NULL to automatically generate
 #' @param ncross_in_bins Number of bins in the input circle (See smart_sample)
 #' @param xbins_in Number of bins along each axis in the hexbin grid for the input circle
 #' @param ncross_in_bin_size Number of points to sample from each bin in the input circle
@@ -370,20 +375,22 @@ get_circle_rad_fix <- function(x,y,cir_rad,data)
 #'                           plot = TRUE, verbose = FALSE)
 #' print_stats
 #' }
-match_print <- function(print_in, print_ref, ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL, eps = .75, seed = 1, num_cores = 8, plot = FALSE, verbose = FALSE) {
+match_print <- function(print_in, print_ref, circle_centers = NULL, ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL, eps = .75, seed = 1, num_cores = 8, plot = FALSE, verbose = FALSE) {
     ##############################################################################################################
     ## Cut circles on input print and reference print to perform matching
     ## 3 on Input circle and 27 on Reference circle
     ##############################################################################################################
     ## Generate 1 circles on input shoeprint
-    circles_dims <- apply(print_in,2,function(x) max(x)-min(x))
-    circle_centres <- matrix(c(	.25,.8,			## 1/4 on x, 4/5 on y 
-                                .25,.3,			## 1/4 on x, 1/5 on y 
-                                .7,.6			## 3/4 on x, 1/2 on y 
-    ),3,byrow=TRUE,dimnames=list(NULL,c("x","y"))) %*% diag(circles_dims)
-    circle_centres <- cbind(circle_centres,c(.4,.4,.4))
-    circles_in <- apply(circle_centres,1,function(x,data) get_circle_fix(x[1],x[2],x[3],data),data=print_in)
+    if (is.null(circle_centers)) {
+        circles_dims <- apply(print_in,2,function(x) max(x)-min(x))
+        circle_centers <- matrix(c(	.25,.8,			## 1/4 on x, 4/5 on y 
+                                    .25,.3,			## 1/4 on x, 1/5 on y 
+                                    .7,.6			## 3/4 on x, 1/2 on y 
+        ),3,byrow=TRUE,dimnames=list(NULL,c("x","y"))) %*% diag(circles_dims)
+        circle_centers <- cbind(circle_centers,c(.4,.4,.4))
+    }
     
+    circles_in <- apply(circle_centers,1,function(x,data) get_circle_fix(x[1],x[2],x[3],data),data=print_in)
     ## Generate candidate circles on reference shoeprint
     rad_pct <- .5
     x_radius <- min(apply(print_ref,2,function(x) ((max(x)-min(x))/2)*rad_pct))
@@ -461,7 +468,7 @@ match_print <- function(print_in, print_ref, ncross_in_bins = 30, xbins_in = 20,
     circles_ref_out <- apply(best_match_params,1,function(x,data) get_circle_rad_fix(x[1],x[2],x[3],data),data=print_ref)
     
     
-    circles_match <- cbind(circle_centres[,1:2],circles_match[,c("new_center_x","new_center_y","new_radius","rotation_angle","input_overlap")])
+    circles_match <- cbind(circle_centers[,1:2],circles_match[,c("new_center_x","new_center_y","new_radius","rotation_angle","input_overlap")])
     names(circles_match) <- c("Fixed_circle_X","Fixed_circle_Y","Match_circle_X","Match_circle_Y","Match_circle_Radius","Rotation_angle","Input_circle_overlap_pct")
     
     ## Congurent Triangle output
