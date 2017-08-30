@@ -4,17 +4,20 @@
 \alias{match_print}
 \title{Matches an input and a reference shoeprint}
 \usage{
-match_print(print_in, print_ref, circle_centers = NULL, ncross_in_bins = 30,
-  xbins_in = 20, ncross_in_bin_size = 1, ncross_ref_bins = NULL,
-  xbins_ref = 30, ncross_ref_bin_size = NULL, eps = 0.75, seed = 1,
-  num_cores = 8, plot = FALSE, verbose = FALSE)
+match_print(print_in, print_ref, circles_input = NULL,
+  circles_reference = NULL, ncross_in_bins = 30, xbins_in = 20,
+  ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30,
+  ncross_ref_bin_size = NULL, eps = 0.75, seed = 1, num_cores = 8,
+  plot = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{print_in}{The input print}
 
 \item{print_ref}{The reference print}
 
-\item{circle_centers}{The circles, specified as a matrix with columns (x, y, rad), or NULL to automatically generate}
+\item{circles_input}{The input circles, specified as a matrix with columns (x, y, rad), or NULL to automatically generate}
+
+\item{circles_reference}{The reference circles, specified as a matrix with columns (x, y, rad), or NULL to automatically generate}
 
 \item{ncross_in_bins}{Number of bins in the input circle (See smart_sample)}
 

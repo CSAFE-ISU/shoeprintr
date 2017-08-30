@@ -341,7 +341,8 @@ get_circle_rad_fix <- function(x,y,cir_rad,data)
 #' @name match_print
 #' @param print_in The input print
 #' @param print_ref The reference print
-#' @param circle_centers The circles, specified as a matrix with columns (x, y, rad), or NULL to automatically generate
+#' @param circles_input The input circles, specified as a matrix with columns (x, y, rad), or NULL to automatically generate
+#' @param circles_reference The reference circles, specified as a matrix with columns (x, y, rad), or NULL to automatically generate
 #' @param ncross_in_bins Number of bins in the input circle (See smart_sample)
 #' @param xbins_in Number of bins along each axis in the hexbin grid for the input circle
 #' @param ncross_in_bin_size Number of points to sample from each bin in the input circle
@@ -375,29 +376,36 @@ get_circle_rad_fix <- function(x,y,cir_rad,data)
 #'                           plot = TRUE, verbose = FALSE)
 #' print_stats
 #' }
-match_print <- function(print_in, print_ref, circle_centers = NULL, ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL, eps = .75, seed = 1, num_cores = 8, plot = FALSE, verbose = FALSE) {
+match_print <- function(print_in, print_ref, circles_input = NULL, circles_reference = NULL, ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL, eps = .75, seed = 1, num_cores = 8, plot = FALSE, verbose = FALSE) {
     ##############################################################################################################
     ## Cut circles on input print and reference print to perform matching
     ## 3 on Input circle and 27 on Reference circle
     ##############################################################################################################
     ## Generate 1 circles on input shoeprint
-    if (is.null(circle_centers)) {
+    if (is.null(circles_input)) {
         circles_dims <- apply(print_in,2,function(x) max(x)-min(x))
         circle_centers <- matrix(c(	.25,.8,			## 1/4 on x, 4/5 on y 
                                     .25,.3,			## 1/4 on x, 1/5 on y 
                                     .7,.6			## 3/4 on x, 1/2 on y 
         ),3,byrow=TRUE,dimnames=list(NULL,c("x","y"))) %*% diag(circles_dims)
         circle_centers <- cbind(circle_centers,c(.4,.4,.4))
+    } else {
+        circle_centers <- circles_input
     }
     
     circles_in <- apply(circle_centers,1,function(x,data) get_circle_fix(x[1],x[2],x[3],data),data=print_in)
+    
     ## Generate candidate circles on reference shoeprint
-    rad_pct <- .5
-    x_radius <- min(apply(print_ref,2,function(x) ((max(x)-min(x))/2)*rad_pct))
-    x_ratios <- c(.25,.5,.75)
-    y_ratios <- x_radius*(1:round((max(print_ref)-min(print_ref))/x_radius))/(max(print_ref)-min(print_ref))
-    xy_ratios <- expand.grid(x_ratios,y_ratios)
-    circles_ref <- apply(xy_ratios,1,function(xy_rt,rad_pct,data) get_circle(data,xy_rt[1],xy_rt[2],rad_pct),rad_pct=rad_pct,data=print_ref)
+    if (is.null(circles_reference)) {
+        rad_pct <- .5
+        x_radius <- min(apply(print_ref,2,function(x) ((max(x)-min(x))/2)*rad_pct))
+        x_ratios <- c(.25,.5,.75)
+        y_ratios <- x_radius*(1:round((max(print_ref)-min(print_ref))/x_radius))/(max(print_ref)-min(print_ref))
+        xy_ratios <- expand.grid(x_ratios,y_ratios)
+        circles_ref <- apply(xy_ratios,1,function(xy_rt,rad_pct,data) get_circle(data,xy_rt[1],xy_rt[2],rad_pct),rad_pct=rad_pct,data=print_ref)
+    } else {
+        circles_ref <- apply(circles_reference,1,function(x,data) get_circle_fix(x[1],x[2],x[3],data),data=print_ref)
+    }
     ##############################################################################################################
     ##############################################################################################################
     
