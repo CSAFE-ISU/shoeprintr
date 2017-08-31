@@ -445,11 +445,11 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     ## Best criterion is whichever have largest input circle overlap
     ##############################################################################################################
     match_result <- do.call(rbind,match_result)
-    best_2_match <- tapply(match_result$input_overlap,rep(1:length(circles_in), each=length(circles_ref)),function(x) order(x,decreasing=TRUE)[1:min(2, length(circles_ref))])
+    best_2_match <- tapply(match_result$input_overlap,rep(1:length(circles_in), each=length(circles_ref)),function(x) order(x,decreasing=TRUE)[1:2])
     best_2_match <- mapply(function(x,y,z) x+(y*z),best_2_match,(1:length(circles_in))-1,MoreArgs=list(z=length(circles_ref)),SIMPLIFY=FALSE)
     best_2_match_params <- match_result[unlist(best_2_match),c("new_center_x","new_center_y")]
     circles_ref_reinf <- apply(best_2_match_params,1,function(x,rad_pct,data) get_circle_fix(x[1],x[2],rad_pct,data),rad_pct=.6,data=print_ref )
-    circles_in_reinf <- rep(circles_in,each=min(2, length(circles_ref)))
+    circles_in_reinf <- rep(circles_in,each=2)
     ##############################################################################################################
     ##############################################################################################################
     
@@ -457,7 +457,7 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     ## Perform reinforcement learning 
     ##############################################################################################################
     match_result_reinf <- lapply(1:length(circles_in_reinf), function(match_idx_reinf) {
-        cat(paste("Reinforcement matching circle pair",match_idx_reinf,"out of", length(circles_in_reinf), "...\n"))
+        cat(paste("Reinforcement matching circle pair",match_idx_reinf,"out of 6...\n"))
         boosted_clique(circle_in=circles_in_reinf[[match_idx_reinf]],circle_ref=circles_ref_reinf[[match_idx_reinf]],
                        ncross_in_bins=ncross_in_bins,xbins_in=xbins_in,ncross_in_bin_size=ncross_in_bin_size,ncross_ref_bins=NULL,xbins_ref=30,ncross_ref_bin_size=NULL,
                        eps=eps,seed=seed,num_cores=num_cores,plot=plot,verbose=verbose,cl=cl
