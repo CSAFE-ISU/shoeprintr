@@ -79,7 +79,7 @@ get_edge_vertice <- function(b_a,eps,la,lb)
 #' @import grDevices
 #' @importFrom stats dist
 #' @importFrom stats median
-get_clique_stats <- function(clique,c_in,circle_in,c_ref,circle_ref,la,lb,plot=FALSE)
+get_clique_stats <- function(clique,c_in,circle_in,c_ref,circle_ref,la,lb,plot=TRUE)
 {
     ## Subset clique points from input and refrence data
     cq_idx <- as.data.frame(t(sapply(clique,function(z) c(i=ifelse(z %% lb==0,(z %/% lb),(z %/% lb)+1),j=ifelse(z %% lb==0,lb,z %% lb)))))
@@ -186,7 +186,7 @@ get_os <- function() {
 #' @export
 #' @import parallel
 #' @importFrom stats dist
-boosted_clique <- function(circle_in, circle_ref, ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL, eps = .75, seed = 1, num_cores = 8, plot = FALSE, verbose = FALSE, cl = NULL) {
+boosted_clique <- function(circle_in, circle_ref, ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL, eps = .75, seed = 1, num_cores = 8, plot = TRUE, verbose = FALSE, cl = NULL) {
     start_time_i <- Sys.time()
     if(verbose) cat("Preparing circles data for edge matching.\n")
     ##############################################################################################################

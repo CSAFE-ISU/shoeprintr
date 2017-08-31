@@ -7,7 +7,7 @@
 boosted_clique(circle_in, circle_ref, ncross_in_bins = 30, xbins_in = 20,
   ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30,
   ncross_ref_bin_size = NULL, eps = 0.75, seed = 1, num_cores = 8,
-  plot = FALSE, verbose = FALSE, cl = NULL)
+  plot = TRUE, verbose = FALSE, cl = NULL)
 }
 \arguments{
 \item{circle_in}{The input circle}
