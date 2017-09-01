@@ -495,8 +495,6 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     points(circles_ref_out[[2]],col="yellow")
     points(circles_ref_out[[3]],col="green")
 
-    # Testing a change
-
     ## Return Stats
     return(cbind(	circles_match,
                   data.frame(	Triangle_sides = c("A-B","A-C","B-C"),
