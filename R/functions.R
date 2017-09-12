@@ -81,6 +81,12 @@ get_edge_vertice <- function(b_a,eps,la,lb)
 #' @importFrom stats median
 get_clique_stats <- function(clique,c_in,circle_in,c_ref,circle_ref,la,lb,plot=TRUE)
 {
+    if (length(clique) < 3) {
+      cat("Cannot calculate clique, too few points\n")
+      
+      return(NA)
+    }
+      
     ## Subset clique points from input and refrence data
     cq_idx <- as.data.frame(t(sapply(clique,function(z) c(i=ifelse(z %% lb==0,(z %/% lb),(z %/% lb)+1),j=ifelse(z %% lb==0,lb,z %% lb)))))
     c_in_cq <- c_in[cq_idx$i,]
@@ -249,7 +255,7 @@ boosted_clique <- function(circle_in, circle_ref, ncross_in_bins = 30, xbins_in 
     ## Windows
     if (!is.null(cl)) {
         final_ks <- do.call(c,parLapply(cl, dist_l_grid_core_assign,function(x,eps,la,lb) {gc();apply(x,1,get_edge_vertice,eps=eps,la=la,lb=lb)},eps=eps,la=la,lb=lb))
-        ## Mac/Linux
+    ## Mac/Linux
     } else {
         final_ks <- do.call(c,mclapply(dist_l_grid_core_assign,function(x,eps,la,lb) {gc();apply(x,1,get_edge_vertice,eps=eps,la=la,lb=lb)},eps=eps,la=la,lb=lb,mc.cores=num_cores))
     }
@@ -412,7 +418,7 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
 
     ##############################################################################################################
     ## Perform initial matching on circles
-    ## 3 on Input circle and 27 on Reference circle
+    ## 3 on Input circle and ~27 on Reference circle
     ##############################################################################################################
     match_grid <- expand.grid(circles_ref,circles_in)
 
@@ -420,13 +426,16 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     cl <- NULL
     if (get_os() == "win64") cl <- makeCluster(num_cores, renice = 0)
 
+    ## Loop over all circle to circle comparisons
     match_result <- lapply(1:nrow(match_grid), function(match_idx) {
         cat(paste("Matching circle pair",match_idx,"out of", nrow(match_grid), "\n"))
 
+        ## Get the circles
         circle_in <- match_grid[match_idx,2][[1]]
         circle_ref <- match_grid[match_idx,1][[1]]
 
-        if (nrow(circle_ref) > 0) {
+        ## Affine transformation requires 3 control points
+        if (nrow(circle_ref) > 2 && nrow(circle_in) > 2) {
             boosted_clique(circle_in, circle_ref,
                            ncross_in_bins=ncross_in_bins,xbins_in=xbins_in,ncross_in_bin_size=ncross_in_bin_size,
                            ncross_ref_bins=ncross_ref_bins,xbins_ref=xbins_ref,ncross_ref_bin_size=ncross_ref_bin_size,
@@ -434,11 +443,12 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
             )
         } else {
             cat("Skipping circle pair", match_idx, "due to no points contained\n")
+          
+            return(NA)
         }
     })
     ##############################################################################################################
     ##############################################################################################################
-
 
     ##############################################################################################################
     ## Select best 2 circles against each of input circle for reinforcement learning
