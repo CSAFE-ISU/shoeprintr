@@ -355,14 +355,16 @@ get_circle_rad_fix <- function(x,y,cir_rad,data)
 #' @param ncross_ref_bins Number of bins in the reference circle
 #' @param xbins_ref Number of bins along each axis in the hexbin grid for the reference circle
 #' @param ncross_ref_bin_size Number of points to sample from each bin in the reference circle
+#' @param max_rotation_angle The maximum rotation angle, in degrees, for inclusion in the best circle matches
 #' @param eps Distance tolerance for declaring an edge match
 #' @param seed The random seed for reproducing results
 #' @param num_cores The number of processor cores for parallel processing
 #' @param plot If TRUE, produce a plot of the clique results
 #' @param verbose If TRUE, print out the timing results for each portion of the algorithm
 #' @return The statistics for the matching between the two circles
-#' @import graphics
-#' @import grDevices
+#' @import dplyr
+#' @import ggplot2
+#' @importFrom gridExtra grid.arrange
 #' @importFrom stats dist
 #' @export
 #' @examples
@@ -382,7 +384,7 @@ get_circle_rad_fix <- function(x,y,cir_rad,data)
 #'                           plot = TRUE, verbose = FALSE)
 #' print_stats
 #' }
-match_print <- function(print_in, print_ref, circles_input = NULL, circles_reference = NULL, ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL, eps = .75, seed = 1, num_cores = 8, plot = FALSE, verbose = FALSE) {
+match_print <- function(print_in, print_ref, circles_input = NULL, circles_reference = NULL, ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL, max_rotation_angle = 60, eps = .75, seed = 1, num_cores = 8, plot = FALSE, verbose = FALSE) {
     ##############################################################################################################
     ## Cut circles on input print and reference print to perform matching
     ## 3 on Input circle and 27 on Reference circle
@@ -455,9 +457,24 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     ## Best criterion is whichever have largest input circle overlap
     ##############################################################################################################
     match_result <- do.call(rbind,match_result)
-    best_2_match <- tapply(match_result$input_overlap,rep(1:length(circles_in), each=length(circles_ref)),function(x) order(x,decreasing=TRUE)[1:2])
-    best_2_match <- mapply(function(x,y,z) x+(y*z),best_2_match,(1:length(circles_in))-1,MoreArgs=list(z=length(circles_ref)),SIMPLIFY=FALSE)
-    best_2_match_params <- match_result[unlist(best_2_match),c("new_center_x","new_center_y")]
+    match_result$circle1 <- rep(1:length(circles_in), each = length(circles_ref))
+    match_result$circle2 <- rep(1:length(circles_ref), times = length(circles_in))
+    
+    ## Take only ones with a low enough rotation angle
+    match_result_best <- match_result %>%
+      filter(rotation_angle <= max_rotation_angle) %>%
+      group_by(circle1) %>%
+      arrange(desc(input_overlap)) %>%
+      slice(1:2)
+    
+    #best_2_match <- tapply(match_result$input_overlap,rep(1:length(circles_in), each=length(circles_ref)),function(x) order(x,decreasing=TRUE)[1:2])
+    #best_2_match <- mapply(function(x,y,z) x+(y*z),best_2_match,(1:length(circles_in))-1,MoreArgs=list(z=length(circles_ref)),SIMPLIFY=FALSE)
+    #best_2_match_params <- match_result[unlist(best_2_match),c("new_center_x","new_center_y")]
+    best_2_match_params <- match_result_best %>%
+      ungroup() %>%
+      select(new_center_x, new_center_y) %>%
+      as.data.frame()
+    
     circles_ref_reinf <- apply(best_2_match_params,1,function(x,rad_pct,data) get_circle_fix(x[1],x[2],rad_pct,data),rad_pct=.6,data=print_ref )
     circles_in_reinf <- rep(circles_in,each=2)
     ##############################################################################################################
@@ -485,25 +502,40 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     best_match_params <- match_result_reinf[unlist(best_match),c("new_center_x","new_center_y","new_radius")]
     circles_ref_out <- apply(best_match_params,1,function(x,data) get_circle_rad_fix(x[1],x[2],x[3],data),data=print_ref)
 
-
     circles_match <- cbind(circle_centers[,1:2],circles_match[,c("new_center_x","new_center_y","new_radius","rotation_angle","input_overlap")])
     names(circles_match) <- c("Fixed_circle_X","Fixed_circle_Y","Match_circle_X","Match_circle_Y","Match_circle_Radius","Rotation_angle","Input_circle_overlap_pct")
 
     ## Congurent Triangle output
     Fixed_triangle <- as.matrix(dist(circles_match[,c("Fixed_circle_X","Fixed_circle_Y")]))
     Match_Triangle <- as.matrix(dist(circles_match[,c("Match_circle_X","Match_circle_Y")]))
+    
+    p1 <- ggplot(data = as.data.frame(print_in), aes(x = x, y = y)) +
+      geom_point() +
+      geom_point(data = circles_in[[1]], color = "red") +
+      geom_point(data = circles_in[[2]], color = "yellow") +
+      geom_point(data = circles_in[[3]], color = "green") +
+      theme_bw()
+    
+    p2 <- ggplot(data = as.data.frame(print_ref), aes(x = x, y = y)) +
+      geom_point() +
+      geom_point(data = circles_ref_out[[1]], color = "red") +
+      geom_point(data = circles_ref_out[[2]], color = "yellow") +
+      geom_point(data = circles_ref_out[[3]], color = "green") +
+      theme_bw()
 
     ## Plot
-    dev.off()
-    par(mfrow=c(1,2))
-    plot(print_in,pch=19)
-    points(circles_in[[1]],col="red")
-    points(circles_in[[2]],col="yellow")
-    points(circles_in[[3]],col="green")
-    plot(print_ref,pch=19)
-    points(circles_ref_out[[1]],col="red")
-    points(circles_ref_out[[2]],col="yellow")
-    points(circles_ref_out[[3]],col="green")
+    #dev.off()
+    #par(mfrow=c(1,2))
+    #plot(print_in,pch=19)
+    #points(circles_in[[1]],col="red")
+    #points(circles_in[[2]],col="yellow")
+    #points(circles_in[[3]],col="green")
+    #plot(print_ref,pch=19)
+    #points(circles_ref_out[[1]],col="red")
+    #points(circles_ref_out[[2]],col="yellow")
+    #points(circles_ref_out[[3]],col="green")
+    
+    try(grid.arrange(p1, p2, ncol = 2), silent = TRUE)
 
     ## Return Stats
     return(cbind(	circles_match,

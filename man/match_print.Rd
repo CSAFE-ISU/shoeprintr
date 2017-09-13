@@ -7,8 +7,8 @@
 match_print(print_in, print_ref, circles_input = NULL,
   circles_reference = NULL, ncross_in_bins = 30, xbins_in = 20,
   ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30,
-  ncross_ref_bin_size = NULL, eps = 0.75, seed = 1, num_cores = 8,
-  plot = FALSE, verbose = FALSE)
+  ncross_ref_bin_size = NULL, max_rotation_angle = 60, eps = 0.75,
+  seed = 1, num_cores = 8, plot = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{print_in}{The input print}
@@ -30,6 +30,8 @@ match_print(print_in, print_ref, circles_input = NULL,
 \item{xbins_ref}{Number of bins along each axis in the hexbin grid for the reference circle}
 
 \item{ncross_ref_bin_size}{Number of points to sample from each bin in the reference circle}
+
+\item{max_rotation_angle}{The maximum rotation angle, in degrees, for inclusion in the best circle matches}
 
 \item{eps}{Distance tolerance for declaring an edge match}
 
@@ -60,7 +62,7 @@ print_ref <- leftcorner_cent(reference_example)
 print_stats <- match_print(print_in, print_ref,
                           ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
                           ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
-                          eps = .75, seed = 1, num_cores = parallel::detectCores(), 
+                          eps = .75, seed = 1, num_cores = parallel::detectCores(),
                           plot = TRUE, verbose = FALSE)
 print_stats
 }

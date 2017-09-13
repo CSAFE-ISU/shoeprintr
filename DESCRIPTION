@@ -17,4 +17,7 @@ RoxygenNote: 6.0.1
 Imports: 
     hexbin,
     vec2dtransf,
-    sp
+    sp,
+    gridExtra,
+    dplyr,
+    ggplot2
