@@ -535,7 +535,7 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     #points(circles_ref_out[[2]],col="yellow")
     #points(circles_ref_out[[3]],col="green")
     
-    try(print(grid.arrange(p1, p2, ncol = 2)), silent = TRUE)
+    try(grid.arrange(p1, p2, ncol = 2))
 
     ## Return Stats
     return(cbind(	circles_match,
