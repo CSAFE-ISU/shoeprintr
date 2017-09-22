@@ -83,10 +83,10 @@ get_clique_stats <- function(clique,c_in,circle_in,c_ref,circle_ref,la,lb,plot=T
 {
     if (length(clique) < 3) {
       cat("Cannot calculate clique, too few points\n")
-      
+
       return(NA)
     }
-      
+
     ## Subset clique points from input and refrence data
     cq_idx <- as.data.frame(t(sapply(clique,function(z) c(i=ifelse(z %% lb==0,(z %/% lb),(z %/% lb)+1),j=ifelse(z %% lb==0,lb,z %% lb)))))
     c_in_cq <- c_in[cq_idx$i,]
@@ -445,7 +445,7 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
             )
         } else {
             cat("Skipping circle pair", match_idx, "due to no points contained\n")
-          
+
             return(NA)
         }
     })
@@ -459,14 +459,14 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     match_result <- do.call(rbind,match_result)
     match_result$circle1 <- rep(1:length(circles_in), each = length(circles_ref))
     match_result$circle2 <- rep(1:length(circles_ref), times = length(circles_in))
-    
+
     ## Take only ones with a low enough rotation angle
     match_result_best <- match_result %>%
       filter(rotation_angle <= max_rotation_angle) %>%
       group_by(circle1) %>%
       arrange(desc(input_overlap)) %>%
       slice(1:2)
-    
+
     #best_2_match <- tapply(match_result$input_overlap,rep(1:length(circles_in), each=length(circles_ref)),function(x) order(x,decreasing=TRUE)[1:2])
     #best_2_match <- mapply(function(x,y,z) x+(y*z),best_2_match,(1:length(circles_in))-1,MoreArgs=list(z=length(circles_ref)),SIMPLIFY=FALSE)
     #best_2_match_params <- match_result[unlist(best_2_match),c("new_center_x","new_center_y")]
@@ -474,7 +474,7 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
       ungroup() %>%
       select(new_center_x, new_center_y) %>%
       as.data.frame()
-    
+
     circles_ref_reinf <- apply(best_2_match_params,1,function(x,rad_pct,data) get_circle_fix(x[1],x[2],rad_pct,data),rad_pct=.6,data=print_ref )
     circles_in_reinf <- rep(circles_in,each=2)
     ##############################################################################################################
@@ -508,14 +508,14 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     ## Congurent Triangle output
     Fixed_triangle <- as.matrix(dist(circles_match[,c("Fixed_circle_X","Fixed_circle_Y")]))
     Match_Triangle <- as.matrix(dist(circles_match[,c("Match_circle_X","Match_circle_Y")]))
-    
+
     p1 <- ggplot(data = as.data.frame(print_in), aes(x = x, y = y)) +
       geom_point() +
       geom_point(data = circles_in[[1]], color = "red") +
       geom_point(data = circles_in[[2]], color = "yellow") +
       geom_point(data = circles_in[[3]], color = "green") +
       theme_bw()
-    
+
     p2 <- ggplot(data = as.data.frame(print_ref), aes(x = x, y = y)) +
       geom_point() +
       geom_point(data = circles_ref_out[[1]], color = "red") +
@@ -534,15 +534,33 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     #points(circles_ref_out[[1]],col="red")
     #points(circles_ref_out[[2]],col="yellow")
     #points(circles_ref_out[[3]],col="green")
-    
+
     try(grid.arrange(p1, p2, ncol = 2))
 
+    old_result <- cbind(	circles_match,
+                         data.frame(	Triangle_sides = c("A-B","A-C","B-C"),
+                                     Fixed_circle_side_length = Fixed_triangle[row(Fixed_triangle)<col(Fixed_triangle)],
+                                     Match_circle_side_length = Match_Triangle[row(Match_Triangle)<col(Match_Triangle)]
+                         )
+    )
+
+    new_result<- sum_result(old_result)
+
     ## Return Stats
-    return(cbind(	circles_match,
-                  data.frame(	Triangle_sides = c("A-B","A-C","B-C"),
-                              Fixed_circle_side_length = Fixed_triangle[row(Fixed_triangle)<col(Fixed_triangle)],
-                              Match_circle_side_length = Match_Triangle[row(Match_Triangle)<col(Match_Triangle)]
-                  )
-    ))
+    return(list(old_result, new_result))
 
 }
+
+
+
+sum_result<-function(data){
+
+  R1<-mean(data[,7])
+  R2<-mean(abs(data[,9]-data[,10]))
+  R3<-sd(data[,6])
+
+  Result<-c(R1,R2,R3)
+  return(Result)
+
+}
+
