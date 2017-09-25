@@ -461,7 +461,6 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     match_result$circle2 <- rep(1:length(circles_ref), times = length(circles_in))
 
     ## Take only ones with a low enough rotation angle
-    filter_ind <- which(match_result$rotation_angle <= max_rotation_angle)
     match_result_best <- match_result %>%
       filter(rotation_angle <= max_rotation_angle) %>%
       group_by(circle1) %>%
@@ -520,7 +519,7 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
 
     circles_ref_out <- apply(best_match_params,1,function(x,data) get_circle_rad_fix(x[1],x[2],x[3],data),data=print_ref)
 
-    circles_match <- cbind(circle_centers[filter_ind,1:2, drop = FALSE],circles_match[,c("new_center_x","new_center_y","new_radius","rotation_angle","input_overlap")])
+    circles_match <- cbind(circle_centers[,1:2, drop = FALSE],circles_match[,c("new_center_x","new_center_y","new_radius","rotation_angle","input_overlap")])
     names(circles_match) <- c("Fixed_circle_X","Fixed_circle_Y","Match_circle_X","Match_circle_Y","Match_circle_Radius","Rotation_angle","Input_circle_overlap_pct")
 
     ## Congurent Triangle output
