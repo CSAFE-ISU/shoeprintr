@@ -586,3 +586,103 @@ sum_result<-function(data){
 }
 
 
+
+centercircle_match<-function(input, reference, output){
+
+  input<-lc_hri_02L_01
+  reference<-lc_hri_02L_02
+  output<-mat_02L_01_02
+
+  #center 1 - X
+  cx.in.1<-mean(c(output[1,1],output[2,1]))
+  #center 1 - Y
+  cy.in.1<-mean(c(output[1,2],output[2,2]))
+
+  #center 2 - X
+  cx.in.2<-mean(c(output[2,1],output[3,1]))
+  #center 2 - Y
+  cy.in.2<-mean(c(output[2,2],output[3,2]))
+
+  #center 3 - X
+  cx.in.3<-mean(c(output[3,1],output[1,1]))
+  #center 3 - Y
+  cy.in.3<-mean(c(output[3,2],output[1,2]))
+
+  #center 4 - X
+  cx.in.4<-mean(c(output[1,1],output[2,1],output[3,1]))
+  #center 4 - Y
+  cy.in.4<-mean(c(output[1,2],output[2,2],output[3,2]))
+
+  #estimated circle location
+  #center 1 - X
+  cx.re.1<-mean(c(output[1,3],output[2,3]))
+  #center 1 - Y
+  cy.re.1<-mean(c(output[1,4],output[2,4]))
+
+  #center 2 - X
+  cx.re.2<-mean(c(output[2,3],output[3,3]))
+  #center 2 - Y
+  cy.re.2<-mean(c(output[2,4],output[3,4]))
+
+  #center 3 - X
+  cx.re.3<-mean(c(output[3,3],output[1,3]))
+  #center 3 - Y
+  cy.re.3<-mean(c(output[3,4],output[1,4]))
+
+  #center 4 - X
+  cx.re.4<-mean(c(output[1,3],output[2,3],output[3,3]))
+  #center 4 - Y
+  cy.re.4<-mean(c(output[1,4],output[2,4],output[3,4]))
+
+  # step 2 : 4 of center circles matching
+
+  input_circles <- matrix(c(cx.in.1, cy.in.1, 40), nrow = 1, ncol = 3)
+  reference_circles <- matrix(c(cx.re.1, cy.re.1, 55), nrow = 1, ncol = 3)
+
+  cc1_02L_01_02 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
+                               max_rotation_angle = 20,
+                               ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
+                               ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
+                               eps = .75, seed = 1, num_cores = parallel::detectCores(),
+                               plot = FALSE, verbose = TRUE)
+
+
+  input_circles <- matrix(c(cx.in.2, cy.in.2, 40), nrow = 1, ncol = 3)
+  reference_circles <- matrix(c(cx.re.2, cy.re.2, 55), nrow = 1, ncol = 3)
+
+  cc2_02L_01_02 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
+                               max_rotation_angle = 20,
+                               ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
+                               ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
+                               eps = .75, seed = 1, num_cores = parallel::detectCores(),
+                               plot = FALSE, verbose = TRUE)
+
+  input_circles <- matrix(c(cx.in.3, cy.in.3, 40), nrow = 1, ncol = 3)
+  reference_circles <- matrix(c(cx.re.3, cy.re.3, 55), nrow = 1, ncol = 3)
+
+  cc3_02L_01_02 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
+                               max_rotation_angle = 20,
+                               ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
+                               ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
+                               eps = .75, seed = 1, num_cores = parallel::detectCores(),
+                               plot = FALSE, verbose = TRUE)
+
+
+  input_circles <- matrix(c(cx.in.4, cy.in.4, 40), nrow = 1, ncol = 3)
+  reference_circles <- matrix(c(cx.re.4, cy.re.4, 55), nrow = 1, ncol = 3)
+
+  cc4_02L_01_02 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
+                               max_rotation_angle = 20,
+                               ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
+                               ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
+                               eps = .75, seed = 1, num_cores = parallel::detectCores(),
+                               plot = FALSE, verbose = TRUE)
+
+
+  comp<-c('1-2','2-3','3-1','1-2-3')
+  re<-rbind(cc1_02L_01_02[[1]][1,1:7],cc2_02L_01_02[[1]][1,1:7],cc3_02L_01_02[[1]][1,1:7],cc4_02L_01_02[[1]][1,1:7])
+  Result<-data.frame(comp,re)
+
+  return(Result)
+}
+
