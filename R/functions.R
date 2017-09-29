@@ -153,7 +153,7 @@ get_clique_stats <- function(clique,c_in,circle_in,c_ref,circle_ref,la,lb,plot=T
     ## Return Statistics
     return(data.frame(	clique_size=length(clique),
                        rotation_angle = rot_angle,
-                       refrence_overlap=nrow(circle_in_ref_dist_idx)/nrow(circle_ref),
+                       reference_overlap=nrow(circle_in_ref_dist_idx)/nrow(circle_ref),
                        input_overlap=nrow(circle_in_dist_idx)/nrow(circle_in),
                        med_dist_euc = round(median(apply((circle_in_ref_dist_idx-circle_in_dist_idx)^2,1,sum)),5),
                        new_center_x=center_new[1],new_center_y=center_new[2],
@@ -476,7 +476,7 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
       as.data.frame()
 
     circles_ref_reinf <- apply(best_2_match_params,1,function(x,rad_pct,data) get_circle_fix(x[1],x[2],rad_pct,data),rad_pct=.6,data=print_ref )
-    circles_in_reinf <- rep(circles_in,each=2)
+    circles_in_reinf <- rep(circles_in, length.out = nrow(match_result_best))
     ##############################################################################################################
     ##############################################################################################################
 
@@ -484,7 +484,7 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     ## Perform reinforcement learning
     ##############################################################################################################
     match_result_reinf <- lapply(1:length(circles_in_reinf), function(match_idx_reinf) {
-        cat(paste("Reinforcement matching circle pair",match_idx_reinf,"out of 6...\n"))
+        cat(paste("Reinforcement matching circle pair",match_idx_reinf,"out of", length(circles_in_reinf), "\n"))
         boosted_clique(circle_in=circles_in_reinf[[match_idx_reinf]],circle_ref=circles_ref_reinf[[match_idx_reinf]],
                        ncross_in_bins=ncross_in_bins,xbins_in=xbins_in,ncross_in_bin_size=ncross_in_bin_size,ncross_ref_bins=NULL,xbins_ref=30,ncross_ref_bin_size=NULL,
                        eps=eps,seed=seed,num_cores=num_cores,plot=plot,verbose=verbose,cl=cl
@@ -496,13 +496,30 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     ## Prepare plot and  return output
     ##############################################################################################################
     match_result_reinf <- do.call(rbind,match_result_reinf)
-    best_match <- tapply(match_result_reinf$input_overlap,rep(1:length(circles_in), each=2),function(x) order(x,decreasing=TRUE)[1],simplify=FALSE)
-    best_match <- mapply(function(x,y,z) x+(y*z),best_match,(1:length(circles_in))-1,MoreArgs=list(z=2),SIMPLIFY=FALSE)
-    circles_match <- match_result_reinf[unlist(best_match),]
-    best_match_params <- match_result_reinf[unlist(best_match),c("new_center_x","new_center_y","new_radius")]
+    match_result_reinf$circle1 <- match_result_best$circle1
+    match_result_reinf$circle2 <- match_result_best$circle2
+    
+    #best_match <- tapply(match_result_reinf$input_overlap,rep(1:length(circles_in), each=2),function(x) order(x,decreasing=TRUE)[1],simplify=FALSE)
+    #best_match <- mapply(function(x,y,z) x+(y*z),best_match,(1:length(circles_in))-1,MoreArgs=list(z=2),SIMPLIFY=FALSE)
+    #circles_match <- match_result_reinf[unlist(best_match),]
+    #best_match_params <- match_result_reinf[unlist(best_match),c("new_center_x","new_center_y","new_radius")]
+    
+    reinf_result_best <- match_result_reinf %>%
+      #filter(rotation_angle <= max_rotation_angle) %>%
+      group_by(circle1) %>%
+      arrange(desc(input_overlap)) %>%
+      slice(1)
+    
+    circles_match <- reinf_result_best %>%
+      ungroup() %>%
+      as.data.frame()
+    
+    best_match_params <- circles_match %>%
+      select(new_center_x, new_center_y, new_radius)
+
     circles_ref_out <- apply(best_match_params,1,function(x,data) get_circle_rad_fix(x[1],x[2],x[3],data),data=print_ref)
 
-    circles_match <- cbind(circle_centers[,1:2],circles_match[,c("new_center_x","new_center_y","new_radius","rotation_angle","input_overlap")])
+    circles_match <- cbind(circle_centers[,1:2, drop = FALSE],circles_match[,c("new_center_x","new_center_y","new_radius","rotation_angle","input_overlap")])
     names(circles_match) <- c("Fixed_circle_X","Fixed_circle_Y","Match_circle_X","Match_circle_Y","Match_circle_Radius","Rotation_angle","Input_circle_overlap_pct")
 
     ## Congurent Triangle output
@@ -512,16 +529,16 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     p1 <- ggplot(data = as.data.frame(print_in), aes(x = x, y = y)) +
       geom_point() +
       geom_point(data = circles_in[[1]], color = "red") +
-      geom_point(data = circles_in[[2]], color = "yellow") +
-      geom_point(data = circles_in[[3]], color = "green") +
       theme_bw()
+      if (length(circles_in) > 1) p1 <- p1 + geom_point(data = circles_in[[2]], color = "yellow")
+      if (length(circles_in) > 2) p1 <- p1 + geom_point(data = circles_in[[3]], color = "green")
 
     p2 <- ggplot(data = as.data.frame(print_ref), aes(x = x, y = y)) +
       geom_point() +
       geom_point(data = circles_ref_out[[1]], color = "red") +
-      geom_point(data = circles_ref_out[[2]], color = "yellow") +
-      geom_point(data = circles_ref_out[[3]], color = "green") +
       theme_bw()
+      if (length(circles_ref_out) > 1) p2 <- p2 + geom_point(data = circles_ref_out[[2]], color = "yellow")
+      if (length(circles_ref_out) > 2) p2 <- p2 + geom_point(data = circles_ref_out[[3]], color = "green")
 
     ## Plot
     #dev.off()
@@ -537,10 +554,15 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
 
     try(grid.arrange(p1, p2, ncol = 2))
 
-    old_result <- cbind(	circles_match,
-                         data.frame(	Triangle_sides = c("A-B","A-C","B-C"),
-                                     Fixed_circle_side_length = Fixed_triangle[row(Fixed_triangle)<col(Fixed_triangle)],
-                                     Match_circle_side_length = Match_Triangle[row(Match_Triangle)<col(Match_Triangle)]
+    fix1 <- Fixed_triangle[row(Fixed_triangle)<col(Fixed_triangle)]
+    fix2 <- Match_Triangle[row(Match_Triangle)<col(Match_Triangle)]
+    if (length(fix1) == 0) fix1 <- NA
+    if (length(fix2) == 0) fix2 <- NA
+    
+    old_result <- cbind( circles_match,
+                         data.frame(	Triangle_sides = c("A-B","A-C","B-C")[1:nrow(circles_match)],
+                                     Fixed_circle_side_length = fix1,
+                                     Match_circle_side_length = fix2
                          )
     )
 
@@ -548,7 +570,6 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
 
     ## Return Stats
     return(list(old_result, new_result))
-
 }
 
 
