@@ -585,13 +585,7 @@ sum_result<-function(data){
 
 }
 
-
-
 centercircle_match<-function(input, reference, output){
-
-  input<-lc_hri_02L_01
-  reference<-lc_hri_02L_02
-  output<-mat_02L_01_02
 
   #center 1 - X
   cx.in.1<-mean(c(output[1,1],output[2,1]))
@@ -639,50 +633,49 @@ centercircle_match<-function(input, reference, output){
   input_circles <- matrix(c(cx.in.1, cy.in.1, 40), nrow = 1, ncol = 3)
   reference_circles <- matrix(c(cx.re.1, cy.re.1, 55), nrow = 1, ncol = 3)
 
-  cc1_02L_01_02 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
-                               max_rotation_angle = 20,
-                               ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
-                               ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
-                               eps = .75, seed = 1, num_cores = parallel::detectCores(),
-                               plot = FALSE, verbose = TRUE)
+  cc1 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
+                     max_rotation_angle = 20,
+                     ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
+                     ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
+                     eps = .75, seed = 1, num_cores = parallel::detectCores(),
+                     plot = FALSE, verbose = TRUE)
 
 
   input_circles <- matrix(c(cx.in.2, cy.in.2, 40), nrow = 1, ncol = 3)
   reference_circles <- matrix(c(cx.re.2, cy.re.2, 55), nrow = 1, ncol = 3)
 
-  cc2_02L_01_02 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
-                               max_rotation_angle = 20,
-                               ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
-                               ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
-                               eps = .75, seed = 1, num_cores = parallel::detectCores(),
-                               plot = FALSE, verbose = TRUE)
+  cc2 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
+                     max_rotation_angle = 20,
+                     ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
+                     ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
+                     eps = .75, seed = 1, num_cores = parallel::detectCores(),
+                     plot = FALSE, verbose = TRUE)
 
   input_circles <- matrix(c(cx.in.3, cy.in.3, 40), nrow = 1, ncol = 3)
   reference_circles <- matrix(c(cx.re.3, cy.re.3, 55), nrow = 1, ncol = 3)
 
-  cc3_02L_01_02 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
-                               max_rotation_angle = 20,
-                               ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
-                               ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
-                               eps = .75, seed = 1, num_cores = parallel::detectCores(),
-                               plot = FALSE, verbose = TRUE)
+  cc3 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
+                     max_rotation_angle = 20,
+                     ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
+                     ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
+                     eps = .75, seed = 1, num_cores = parallel::detectCores(),
+                     plot = FALSE, verbose = TRUE)
 
 
   input_circles <- matrix(c(cx.in.4, cy.in.4, 40), nrow = 1, ncol = 3)
   reference_circles <- matrix(c(cx.re.4, cy.re.4, 55), nrow = 1, ncol = 3)
 
-  cc4_02L_01_02 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
-                               max_rotation_angle = 20,
-                               ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
-                               ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
-                               eps = .75, seed = 1, num_cores = parallel::detectCores(),
-                               plot = FALSE, verbose = TRUE)
+  cc4 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
+                     max_rotation_angle = 20,
+                     ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
+                     ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
+                     eps = .75, seed = 1, num_cores = parallel::detectCores(),
+                     plot = FALSE, verbose = TRUE)
 
 
   comp<-c('1-2','2-3','3-1','1-2-3')
-  re<-rbind(cc1_02L_01_02[[1]][1,1:7],cc2_02L_01_02[[1]][1,1:7],cc3_02L_01_02[[1]][1,1:7],cc4_02L_01_02[[1]][1,1:7])
+  re<-rbind(cc1[[1]][1,1:7],cc2[[1]][1,1:7],cc3[[1]][1,1:7],cc4[[1]][1,1:7])
   Result<-data.frame(comp,re)
 
   return(Result)
 }
-
