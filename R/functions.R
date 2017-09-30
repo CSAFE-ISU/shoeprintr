@@ -586,7 +586,6 @@ sum_result<-function(data){
 }
 
 centercircle_match<-function(input, reference, output){
-
   #center 1 - X
   cx.in.1<-mean(c(output[1,1],output[2,1]))
   #center 1 - Y
