@@ -633,7 +633,6 @@ centercircle_match<-function(input, reference, output){
   reference_circles <- matrix(c(cx.re.1, cy.re.1, 55), nrow = 1, ncol = 3)
 
   cc1 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
-                     max_rotation_angle = 20,
                      ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
                      ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
                      eps = .75, seed = 1, num_cores = parallel::detectCores(),
@@ -644,7 +643,6 @@ centercircle_match<-function(input, reference, output){
   reference_circles <- matrix(c(cx.re.2, cy.re.2, 55), nrow = 1, ncol = 3)
 
   cc2 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
-                     max_rotation_angle = 20,
                      ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
                      ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
                      eps = .75, seed = 1, num_cores = parallel::detectCores(),
@@ -654,7 +652,6 @@ centercircle_match<-function(input, reference, output){
   reference_circles <- matrix(c(cx.re.3, cy.re.3, 55), nrow = 1, ncol = 3)
 
   cc3 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
-                     max_rotation_angle = 20,
                      ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
                      ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
                      eps = .75, seed = 1, num_cores = parallel::detectCores(),
@@ -665,7 +662,6 @@ centercircle_match<-function(input, reference, output){
   reference_circles <- matrix(c(cx.re.4, cy.re.4, 55), nrow = 1, ncol = 3)
 
   cc4 <- match_print(input, reference, circles_input = input_circles, circles_reference = reference_circles,
-                     max_rotation_angle = 20,
                      ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1,
                      ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL,
                      eps = .75, seed = 1, num_cores = parallel::detectCores(),
