@@ -7,7 +7,7 @@
 match_print(print_in, print_ref, circles_input = NULL,
   circles_reference = NULL, ncross_in_bins = 30, xbins_in = 20,
   ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30,
-  ncross_ref_bin_size = NULL, max_rotation_angle = 60, eps = 0.75,
+  ncross_ref_bin_size = NULL, max_rotation_angle = 365, eps = 0.75,
   seed = 1, num_cores = 8, plot = FALSE, verbose = FALSE)
 }
 \arguments{

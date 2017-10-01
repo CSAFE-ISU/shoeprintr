@@ -384,7 +384,7 @@ get_circle_rad_fix <- function(x,y,cir_rad,data)
 #'                           plot = TRUE, verbose = FALSE)
 #' print_stats
 #' }
-match_print <- function(print_in, print_ref, circles_input = NULL, circles_reference = NULL, ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL, max_rotation_angle = 60, eps = .75, seed = 1, num_cores = 8, plot = FALSE, verbose = FALSE) {
+match_print <- function(print_in, print_ref, circles_input = NULL, circles_reference = NULL, ncross_in_bins = 30, xbins_in = 20, ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30, ncross_ref_bin_size = NULL, max_rotation_angle = 365, eps = .75, seed = 1, num_cores = 8, plot = FALSE, verbose = FALSE) {
     ##############################################################################################################
     ## Cut circles on input print and reference print to perform matching
     ## 3 on Input circle and 27 on Reference circle
@@ -585,7 +585,20 @@ sum_result<-function(data){
 
 }
 
+#' @title Matches a center circle input and a reference shoeprint
+#'
+#' @description Function to perform matching of center footprints by matching all the candidate circles with input circles. This function performs initial matching between 3 circles on the input print and 27 candidate circles on the reference shoeprint. After the initial cliques, it select 2 best circles for each input circle and performs reinforcement matching on them. In reinforcement matching, full points on reference circle are considered instead of user defined. The function returns the final circle parameters and the statistics of the triangle formed.
+#'
+#' @name centercircle_match
+#' @param input The input print
+#' @param reference The reference print
+#' @param output The output obtained from the match_print function
+#' 
+#' @export
 centercircle_match<-function(input, reference, output){
+  
+  if (nrow(output) < 3) stop("Must have three circles in the output")
+  
   #center 1 - X
   cx.in.1<-mean(c(output[1,1],output[2,1]))
   #center 1 - Y
