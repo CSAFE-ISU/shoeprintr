@@ -283,7 +283,7 @@ boosted_clique <- function(circle_in, circle_ref, ncross_in_bins = 30, xbins_in 
     writeLines(edge_list_pmc_format, file.path(mytempdir, "edge.mtx"))
     ext <- ifelse(get_os() == "win64", ".exe", "")
     clique_max <- system(paste0(system.file(package = "shoeprintr", "bin", get_os(), paste0("pmc", ext)), " -f ", file.path(mytempdir, "edge.mtx"), " -a 0"), intern = TRUE)
-    clique_max <- as.numeric(unlist(strsplit(gsub("Maximum clique: ","",clique_max[grepl("^Maximum clique: ",clique_max)])," ")))
+    clique_max <- as.numeric(unlist(strsplit(gsub(".*Maximum clique: (.*) ", "\\1", clique_max[grepl("^.*Maximum clique: ", clique_max)])," ")))
 
     ## Cleanup
     gc()
