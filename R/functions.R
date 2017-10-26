@@ -428,26 +428,28 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     if (get_os() == "win64") cl <- makeCluster(num_cores, renice = 0)
 
     ## Loop over all circle to circle comparisons
-    match_result <- lapply(1:nrow(match_grid), function(match_idx) {
-        cat(paste("Matching circle pair",match_idx,"out of", nrow(match_grid), "\n"))
+    match_result <- list()
+    for (match_idx in 1:nrow(match_grid)) {
+      cat(paste("Matching circle pair",match_idx,"out of", nrow(match_grid), "\n"))
+      
+      ## Get the circles
+      circle_in <- match_grid[match_idx,2][[1]]
+      circle_ref <- match_grid[match_idx,1][[1]]
+      
+      ## Affine transformation requires 3 control points
+      if (nrow(circle_ref) > 2 && nrow(circle_in) > 2) {
+        match_result[[match_idx]] <- boosted_clique(circle_in, circle_ref,
+                       ncross_in_bins=ncross_in_bins,xbins_in=xbins_in,ncross_in_bin_size=ncross_in_bin_size,
+                       ncross_ref_bins=ncross_ref_bins,xbins_ref=xbins_ref,ncross_ref_bin_size=ncross_ref_bin_size,
+                       eps=eps,seed=seed,num_cores=num_cores,plot=plot,verbose=verbose,cl=cl
+        )
+      } else {
+        cat("Skipping circle pair", match_idx, "due to no points contained\n")
+        
+        match_result[[match_idx]] <- NA
+      }
+    }
 
-        ## Get the circles
-        circle_in <- match_grid[match_idx,2][[1]]
-        circle_ref <- match_grid[match_idx,1][[1]]
-
-        ## Affine transformation requires 3 control points
-        if (nrow(circle_ref) > 2 && nrow(circle_in) > 2) {
-            boosted_clique(circle_in, circle_ref,
-                           ncross_in_bins=ncross_in_bins,xbins_in=xbins_in,ncross_in_bin_size=ncross_in_bin_size,
-                           ncross_ref_bins=ncross_ref_bins,xbins_ref=xbins_ref,ncross_ref_bin_size=ncross_ref_bin_size,
-                           eps=eps,seed=seed,num_cores=num_cores,plot=plot,verbose=verbose,cl=cl
-            )
-        } else {
-            cat("Skipping circle pair", match_idx, "due to no points contained\n")
-
-            return(NA)
-        }
-    })
     ##############################################################################################################
     ##############################################################################################################
 
