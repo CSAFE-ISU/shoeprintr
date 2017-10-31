@@ -151,14 +151,16 @@ get_clique_stats <- function(clique,c_in,circle_in,c_ref,circle_ref,la,lb,plot=T
     }
     gc()
     ## Return Statistics
-    return(data.frame(	clique_size=length(clique),
-                       rotation_angle = rot_angle,
-                       reference_overlap=nrow(circle_in_ref_dist_idx)/nrow(circle_ref),
-                       input_overlap=nrow(circle_in_dist_idx)/nrow(circle_in),
-                       med_dist_euc = round(median(apply((circle_in_ref_dist_idx-circle_in_dist_idx)^2,1,sum)),5),
-                       new_center_x=center_new[1],new_center_y=center_new[2],
-                       new_radius=radius_new
-    ))
+    mylist <- list(clique_stats = data.frame(	clique_size=length(clique),
+                                              rotation_angle = rot_angle,
+                                              reference_overlap=nrow(circle_in_ref_dist_idx)/nrow(circle_ref),
+                                              input_overlap=nrow(circle_in_dist_idx)/nrow(circle_in),
+                                              med_dist_euc = round(median(apply((circle_in_ref_dist_idx-circle_in_dist_idx)^2,1,sum)),5),
+                                              new_center_x=center_new[1],new_center_y=center_new[2],
+                                              new_radius=radius_new),
+                   affine = affine_tfr_mat)
+    
+    return(mylist)
 }
 
 get_os <- function() {
@@ -437,11 +439,13 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
       
       ## Affine transformation requires 3 control points
       if (nrow(circle_ref) > 2 && nrow(circle_in) > 2) {
-        boosted_clique(circle_in, circle_ref,
+        myboost <- boosted_clique(circle_in, circle_ref,
                        ncross_in_bins=ncross_in_bins,xbins_in=xbins_in,ncross_in_bin_size=ncross_in_bin_size,
                        ncross_ref_bins=ncross_ref_bins,xbins_ref=xbins_ref,ncross_ref_bin_size=ncross_ref_bin_size,
                        eps=eps,seed=seed,num_cores=num_cores,plot=plot,verbose=verbose,cl=cl
         )
+        
+        return(myboost$clique_stats)
       } else {
         cat("Skipping circle pair", match_idx, "due to no points contained\n")
         
@@ -485,10 +489,12 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     ##############################################################################################################
     match_result_reinf <- lapply(1:length(circles_in_reinf), function(match_idx_reinf) {
         cat(paste("Reinforcement matching circle pair",match_idx_reinf,"out of", length(circles_in_reinf), "\n"))
-        boosted_clique(circle_in=circles_in_reinf[[match_idx_reinf]],circle_ref=circles_ref_reinf[[match_idx_reinf]],
+        myboost <- boosted_clique(circle_in=circles_in_reinf[[match_idx_reinf]],circle_ref=circles_ref_reinf[[match_idx_reinf]],
                        ncross_in_bins=ncross_in_bins,xbins_in=xbins_in,ncross_in_bin_size=ncross_in_bin_size,ncross_ref_bins=NULL,xbins_ref=30,ncross_ref_bin_size=NULL,
                        eps=eps,seed=seed,num_cores=num_cores,plot=plot,verbose=verbose,cl=cl
         )
+        
+        return(myboost$clique_stats)
     })
     if (!is.null(cl)) stopCluster(cl)
 
