@@ -763,3 +763,22 @@ int_inside_center<-function(Data, r, nseg, c1,c2){
   int_pts_cir<-cbind(x,y)
   return(unique(int_pts_cir))
 }
+
+
+#' @title Adding the circlular area
+#'
+#' @description Function to find the circular area
+#'
+#' @name gg_circle
+#' @param r radius of the circle
+#' @param xc x value of the circle
+#' @param yc y value of the circle
+#'
+#' @export
+#'
+gg_circle<-function(r, xc, yc, color="black", fill=NA, ...) {
+  x <- xc + r*cos(seq(0, pi, length.out=100))
+  ymax <- yc + r*sin(seq(0, pi, length.out=100))
+  ymin <- yc + r*sin(seq(0, -pi, length.out=100))
+  annotate("ribbon", x=x, ymin=ymin, ymax=ymax, color=color, fill=fill, ...)
+}
