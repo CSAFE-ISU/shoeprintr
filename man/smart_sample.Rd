@@ -4,8 +4,8 @@
 \alias{smart_sample}
 \title{Implementation of a smart sampling algorithm}
 \usage{
-smart_sample(pts_xy, sample_bins = NULL, sample_size = NULL, xbins = 20,
-  seed = 1)
+smart_sample(pts_xy, sample_bins = NULL, sample_size = NULL,
+  xbins = 20, seed = 1)
 }
 \arguments{
 \item{pts_xy}{The set of points (for example, the input circle of a shoeprint)}

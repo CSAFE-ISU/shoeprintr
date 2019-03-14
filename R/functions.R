@@ -159,7 +159,7 @@ get_clique_stats <- function(clique,c_in,circle_in,c_ref,circle_ref,la,lb,plot=T
                                               new_center_x=center_new[1],new_center_y=center_new[2],
                                               new_radius=radius_new),
                    affine = affine_tfr_mat)
-    
+
     return(mylist)
 }
 
@@ -432,11 +432,11 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
     ## Loop over all circle to circle comparisons
     match_result <- lapply(1:nrow(match_grid), function(match_idx) {
       cat(paste("Matching circle pair",match_idx,"out of", nrow(match_grid), "\n"))
-      
+
       ## Get the circles
       circle_in <- match_grid[match_idx,2][[1]]
       circle_ref <- match_grid[match_idx,1][[1]]
-      
+
       ## Affine transformation requires 3 control points
       if (nrow(circle_ref) > 2 && nrow(circle_in) > 2) {
         myboost <- boosted_clique(circle_in, circle_ref,
@@ -444,11 +444,11 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
                        ncross_ref_bins=ncross_ref_bins,xbins_ref=xbins_ref,ncross_ref_bin_size=ncross_ref_bin_size,
                        eps=eps,seed=seed,num_cores=num_cores,plot=plot,verbose=verbose,cl=cl
         )
-        
+
         return(myboost$clique_stats)
       } else {
         cat("Skipping circle pair", match_idx, "due to no points contained\n")
-        
+
         return(NA)
       }
     })
@@ -493,7 +493,7 @@ match_print <- function(print_in, print_ref, circles_input = NULL, circles_refer
                        ncross_in_bins=ncross_in_bins,xbins_in=xbins_in,ncross_in_bin_size=ncross_in_bin_size,ncross_ref_bins=NULL,xbins_ref=30,ncross_ref_bin_size=NULL,
                        eps=eps,seed=seed,num_cores=num_cores,plot=plot,verbose=verbose,cl=cl
         )
-        
+
         return(myboost$clique_stats)
     })
     if (!is.null(cl)) stopCluster(cl)
@@ -599,12 +599,12 @@ sum_result<-function(data){
 #' @param input The input print
 #' @param reference The reference print
 #' @param output The output obtained from the match_print function
-#' 
+#'
 #' @export
 centercircle_match<-function(input, reference, output){
-  
+
   if (nrow(output) < 3) stop("Must have three circles in the output")
-  
+
   #center 1 - X
   cx.in.1<-mean(c(output[1,1],output[2,1]))
   #center 1 - Y
@@ -692,4 +692,45 @@ centercircle_match<-function(input, reference, output){
   Result<-data.frame(comp,re)
 
   return(Result)
+}
+
+
+#' @title Starting plot to position three local areas of shoe Q
+#'
+#' @description Function to plot shoe Q and shoe K together. In shoe Q, three circles are colored.
+#'
+#' @name start_plot
+#' @param input The input print (shoe Q)
+#' @param reference The reference print (shoe K)
+#' @param input_circle Centers and radius for three circles that we fix in the input print (shoe Q)
+#'
+#' @export
+
+start_plot<-function(input, reference, input_circle){
+
+  cx1<-input_circles[1,1]
+  cx2<-input_circles[2,1]
+  cx3<-input_circles[3,1]
+  cy1<-input_circles[1,2]
+  cy2<-input_circles[2,2]
+  cy3<-input_circles[3,2]
+  r1<-input_circles[1,3]
+  r2<-input_circles[2,3]
+  r3<-input_circles[3,3]
+
+  P1<-ggplot(data.frame(input), aes(x=x, y=y))+ geom_point(data=data.frame(input), aes(x=x, y=y), color='black',size=0.1) +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), r1, nseg, cx1,cy1)),color="red",size=0.1)+
+    gg_circle(r1, xc=cx1, yc=cy1, color="red") +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), r2, nseg, cx2,cy2)),color="orange",size=0.1)+
+    gg_circle(r2, xc=cx2, yc=cy2, color="orange") +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), r3, nseg, cx3, cy3)),color="green",size=0.1)+
+    gg_circle(r3, xc=cx3, yc=cy3, color="green")
+
+
+  P2<-ggplot(data.frame(reference), aes(x=x, y=y))+ geom_point(data=data.frame(reference), aes(x=x, y=y), color='black',size=0.1)
+
+
+
+  return(multiplot(P1,P2,cols=2))
+
 }
