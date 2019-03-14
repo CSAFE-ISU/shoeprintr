@@ -2,6 +2,7 @@
 
 export(boosted_clique)
 export(centercircle_match)
+export(focus_data2)
 export(gg_circle)
 export(int_inside_center)
 export(leftcorner_cent)
