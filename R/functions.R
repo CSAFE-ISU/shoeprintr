@@ -734,3 +734,31 @@ start_plot<-function(input, reference, input_circle){
   return(multiplot(P1,P2,cols=2))
 
 }
+
+
+#' @title Detecting points within the circle
+#'
+#' @description Function to find points within the circle
+#'
+#' @name int_inside_center
+#' @param Data The input print
+#' @param r radius of the circle
+#' @param c1 x value of the circle
+#' @param c2 y value of the circle
+#'
+#' @export
+
+int_inside_center<-function(Data, r, nseg, c1,c2){
+  x <- c1+r*cos(seq(0,2*pi, length.out=nseg))
+  y <- c2+r*sin(seq(0,2*pi, length.out=nseg))
+  circle<-data.frame(x,y)
+  shoe_cc<-subset(Data,  (c1-r)<Data[,1] & Data[,1]<(c1+r) & (c2-r)<Data[,2] & Data[,2]<(c2+r))
+  intersect_points<-NULL
+  CIR<-(shoe_cc[,1]-c1)^2+(shoe_cc[,2]-c2)^2
+  shoe_cc<-cbind(shoe_cc, CIR)
+  inside_cir<-subset(shoe_cc, shoe_cc[,3]<r^2)
+  x<-inside_cir[,1]
+  y<-inside_cir[,2]
+  int_pts_cir<-cbind(x,y)
+  return(unique(int_pts_cir))
+}
