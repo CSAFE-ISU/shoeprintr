@@ -731,7 +731,7 @@ start_plot<-function(input, reference, input_circle){
 
 
 
-  return(multiplot(P1,P2,cols=2))
+  return(P1+P2)
 
 }
 
