@@ -749,6 +749,7 @@ start_plot<-function(input, reference, input_circle){
 #' @export
 
 int_inside_center<-function(Data, r, nseg, c1,c2){
+  nseg=360
   x <- c1+r*cos(seq(0,2*pi, length.out=nseg))
   y <- c2+r*sin(seq(0,2*pi, length.out=nseg))
   circle<-data.frame(x,y)
