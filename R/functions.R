@@ -784,27 +784,6 @@ gg_circle<-function(r, xc, yc, color="black", fill=NA, ...) {
 }
 
 
-#' @title Cut first 1% and 99% quantile on x and y coordinates
-#'
-#' @description Function to cut first 1% and 99% quantile on x and y coordinates
-#'
-#' @name focus_data2
-#' @param data matrix of entire points from shoe impression
-#'
-#' @export
-#'
-
-focus_data2<-function(data){
-  data.new<-subset(data, quantile(data[,1], 0.01)<data[,1] &
-                     data[,1]<quantile(data[,1], 0.99) &
-                     quantile(data[,2], 0.01)<data[,2] &
-                     data[,2]<quantile(data[,2], 0.99))
-  data.new<-data.frame(data.new)
-  return(data.new)
-}
-
-
-
 
 #' @title Find the initial circle position by quantile of x and y ranges
 #'
