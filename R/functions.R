@@ -708,15 +708,15 @@ centercircle_match<-function(input, reference, output){
 
 start_plot<-function(input, reference, input_circle){
 
-  cx1<-input_circles[1,1]
-  cx2<-input_circles[2,1]
-  cx3<-input_circles[3,1]
-  cy1<-input_circles[1,2]
-  cy2<-input_circles[2,2]
-  cy3<-input_circles[3,2]
-  r1<-input_circles[1,3]
-  r2<-input_circles[2,3]
-  r3<-input_circles[3,3]
+  cx1<-input_circle[1,1]
+  cx2<-input_circle[2,1]
+  cx3<-input_circle[3,1]
+  cy1<-input_circle[1,2]
+  cy2<-input_circle[2,2]
+  cy3<-input_circle[3,2]
+  r1<-input_circle[1,3]
+  r2<-input_circle[2,3]
+  r3<-input_circle[3,3]
 
   P1<-ggplot(data.frame(input), aes(x=x, y=y))+ geom_point(data=data.frame(input), aes(x=x, y=y), color='black',size=0.1) +
     geom_point(data=data.frame(int_inside_center(data.frame(input), r1, nseg, cx1,cy1)),color="red",size=0.1)+
