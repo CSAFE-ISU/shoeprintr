@@ -802,3 +802,27 @@ focus_data2<-function(data){
   data.new<-data.frame(data.new)
   return(data.new)
 }
+
+
+
+
+#' @title Find the initial circle position by quantile of x and y ranges
+#'
+#' @description Function to find the initial circle position by quantile of x and y ranges. Centers are found as (30%, 80%), (20%, 40%), (70%, 70%) with radius of 50 for three circles.
+#'
+#' @name initial_circle
+#' @param input input impression
+#'
+#' @export
+#'
+#'
+initial_circle<-function(input){
+  circles_dims <- apply(input, 2, function(x) max(x) -  min(x))
+  circle_centers1 <- matrix(c(0.3, 0.8, 0.2, 0.4, 0.7, 0.7), 3,
+                            byrow = TRUE, dimnames = list(NULL, c("x", "y"))) %*% diag(circles_dims)
+
+  circle_centers2 <- circle_centers1 + matrix(c(min(input[,1]), min(input[,1]), min(input[,1]), min(input[,2]),min(input[,2]),min(input[,2])), 3, byrow=FALSE)
+  circle_centers3 <- cbind(circle_centers2, c(50, 50, 50))
+  input_circles<-circle_centers3
+  return(input_circles)
+}
