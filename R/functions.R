@@ -805,3 +805,210 @@ initial_circle<-function(input){
   input_circles<-circle_centers3
   return(input_circles)
 }
+
+
+
+#' @title  Match input and reference with given circle information in input. The searching area is confined.
+#'
+#' @description Find corresponding areas in reference for fixed circles in input. To reduce the time, it confines the area for candidate circles in reference image.
+#' For the first circle, it confines the area into left toe, for the second circle, it searches only left bottom, for the third circle, it searches right toe area of reference shoe.
+#'
+#' @name match_print_subarea
+#' @param input Input image for fixing three circles
+#' @param reference Input image for finding correspondence
+#' @param input_circles Three circles which will be fixed in the input
+#' @param max_rotation_angle maximum rotation angle that we allow for comparisons.
+#'
+#' @export
+#'
+
+match_print_subarea<-function(input, reference, input_circles, max_rotation_angle){
+
+  #original : c(0.3, 0.85, 0.25, 0.3, 0.75, 0.75)
+
+
+  if (is.null(input_circles)) {
+    circles_dims <- apply(input, 2, function(x) max(x) -  min(x))
+    circle_centers1 <- matrix( c(0.3, 0.85, 0.25, 0.3, 0.75, 0.75), 3, byrow = TRUE, dimnames = list(NULL, c("x", "y"))) %*% diag(circles_dims)
+    circle_centers2 <- circle_centers1 + matrix(c(min(input[,1]), min(input[,1]), min(input[,1]), min(input[,2]),min(input[,2]),min(input[,2])), 3, byrow=FALSE)
+    circle_centers3 <- cbind(circle_centers2, c(50, 50, 50))
+    input_circles<-circle_centers3
+  }   else {
+    input_circles <- input_circles
+  }
+
+
+  ref<-data.frame(reference)
+  ref_len_y<-(max(reference[,2])-min(reference[,2]))
+  ref_len_x<-(max(reference[,1])-min(reference[,1]))
+
+  ref_top<-subset(ref, y>0.5*ref_len_y+min(reference[,2]))
+  ref_bottom<-subset(ref, y<=0.5*ref_len_y+min(reference[,2]))
+
+
+  location_ref<-list()
+
+  location_ref[[1]]<-subset(ref_top, x<(ref_len_x/2+min(reference[,1]))) # ref_top_left
+  location_ref[[2]]<-subset(ref_bottom, x<(ref_len_x/2+min(reference[,1]))) #ref_bottom_left
+  location_ref[[3]]<-subset(ref_top, x>=(ref_len_x/2+min(reference[,1]))) #ref_top_right
+  location_ref[[4]]<-subset(ref_bottom, x>=(ref_len_x/2+min(reference[,1]))) #ref_bottom_right
+
+  nseg=360
+  in.cx<-NULL
+  in.cy<-NULL
+  in.r<-NULL
+  final.cx<-NULL
+  final.cy<-NULL
+  final.r<-NULL
+  MM<-NULL
+  FM<-NULL
+  ref_loc<-NULL
+  rd_score<-NULL
+  WM<-NULL
+  ref_loc<-NULL
+  rd_score<-NULL
+  wrong_mat<-NULL
+  WW<-NULL
+  wrong_set<-NULL
+
+  K<-matrix(c(2,3,4,1,3,4,1,2,4,1,2,3), nrow=4, byrow=T)
+
+  for ( k in 1:3){
+
+    print(paste("circle",k,"matching"))
+    in.cx[k]<-input_circles[k,1]
+    in.cy[k]<-input_circles[k,2]
+    in.r[k]<-input_circles[k,3]
+
+    circle_in<-data.frame(int_inside_center(data.frame(input), in.r[k], nseg, in.cx[k], in.cy[k]))
+
+
+    R<-NULL
+    r_ref<-(input_circles[1,3]+15)
+
+    ref_loc<-location_ref[[k]]
+
+    ref_loc_len_x<-(max(ref_loc$x)-min(ref_loc$x))
+    ref_loc_len_y<-(max(ref_loc$y)-min(ref_loc$y))
+
+
+    if(min(ref_loc$y)+r_ref<max(ref_loc$y)-r_ref){
+      ref_cdd_y<-seq(min(ref_loc$y)+r_ref, max(ref_loc$y), by = r_ref)} else {
+        ref_cdd_y<-seq(min(ref_loc$y)+r_ref, max(ref_loc$y)+r_ref, by = r_ref)
+      }
+
+    ref_cdd_x<-(min(ref_loc$x)+max(ref_loc$x))/2
+
+
+    for ( j in 1:length(ref_cdd_y)){
+      circle_cdd_ref<-data.frame(int_inside_center(data.frame(ref), r_ref, nseg, ref_cdd_x, ref_cdd_y[j]))
+
+      if(nrow(circle_cdd_ref)>(nrow(circle_in)*0.2)){
+        M<-try(boosted_clique(circle_in, circle_cdd_ref, ncross_in_bins = 30, xbins_in = 20,
+                              ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30,
+                              ncross_ref_bin_size = NULL, eps = 0.75, seed = 1, num_cores = parallel::detectCores()-1,
+                              plot = FALSE, verbose = FALSE, cl = NULL))
+
+        if (sum(is.na(M[[1]]))<1) {
+          M2<-M$clique_stats
+          Mat<-paste0('mat',j)
+          R<-rbind(R,cbind(Mat,M2))}
+      }
+    }
+
+
+
+    R1<-subset(R,rotation_angle<max_rotation_angle)
+
+    if (nrow(R1)!=0){
+      new.cx<-R1[which.max(R1$input_overlap),7]
+      new.cy<-R1[which.max(R1$input_overlap),8]
+      new.r<-R1[which.max(R1$input_overlap),9]+15} else{
+
+        new.cx<-R[which.max(R$input_overlap),7]
+        new.cy<-R[which.max(R$input_overlap),8]
+        new.r<-R[which.max(R$input_overlap),9]+15
+      }
+
+
+    circle_ref<-data.frame(int_inside_center(data.frame(reference), new.r, nseg, new.cx, new.cy))
+    step2_mat<-boosted_clique(circle_in, circle_ref, ncross_in_bins = 30, xbins_in = 20,
+                              ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30,
+                              ncross_ref_bin_size = NULL, eps = 0.75, seed = 1, num_cores = parallel::detectCores()-1,
+                              plot = FALSE, verbose = FALSE, cl = NULL)$clique_stats
+
+    final.cx[k]<-step2_mat[,6]
+    final.cy[k]<-step2_mat[,7]
+    final.r[k]<-step2_mat[,8]
+
+    MM<-rbind(MM,step2_mat)
+
+
+    #wrong_set<-rbind(location_ref[[K[k,1]]],location_ref[[K[k,2]]],location_ref[[K[k,3]]] )
+
+    #count<-0
+    #repeat{
+    #  w_idx<-sample(1:nrow(wrong_set),1)
+    #  rd.cx<-as.numeric(wrong_set[w_idx,][1])
+    #  rd.cy<-as.numeric(wrong_set[w_idx,][2])
+    #  new.r<-55
+    #  rd_circle_ref<-data.frame(int_inside_center(data.frame(reference), new.r, nseg, rd.cx, rd.cy))
+    #  count<-count+1
+    #  if(nrow(rd_circle_ref)>0.3*nrow(circle_in) & nrow(rd_circle_ref)<1.3*nrow(circle_in) | count==20){
+    #    break}
+    #}
+
+
+
+    #wrong_mat<-boosted_clique(circle_in, rd_circle_ref, ncross_in_bins = 30, xbins_in = 20,
+    #ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30,
+    #ncross_ref_bin_size = NULL, eps = 0.75, seed = 1, num_cores = parallel::detectCores(),
+    #plot = FALSE, verbose = FALSE, cl = NULL)$clique_stats
+
+
+    #WW<-rbind(WW,wrong_mat)
+
+  }
+
+  Input_X<-input_circles[,1]
+  Input_Y<-input_circles[,2]
+  Comp<-c('1-2','1-3','2-3')
+  d_in_1<-sqrt((Input_X[1]-Input_X[2])^2+(Input_Y[1]-Input_Y[2])^2)
+  d_in_2<-sqrt((Input_X[1]-Input_X[3])^2+(Input_Y[1]-Input_Y[3])^2)
+  d_in_3<-sqrt((Input_X[2]-Input_X[3])^2+(Input_Y[2]-Input_Y[3])^2)
+  Euc_input_dist<-c(d_in_1,d_in_2,d_in_3)
+  Reference_X<-MM[,6]
+  Reference_Y<-MM[,7]
+  d_ref_1<-sqrt((Reference_X[1]-Reference_X[2])^2+(Reference_Y[1]-Reference_Y[2])^2)
+  d_ref_2<-sqrt((Reference_X[1]-Reference_X[3])^2+(Reference_Y[1]-Reference_Y[3])^2)
+  d_ref_3<-sqrt((Reference_X[2]-Reference_X[3])^2+(Reference_Y[2]-Reference_Y[3])^2)
+  Euc_ref_dist<-c(d_ref_1,d_ref_2,d_ref_3)
+  Reference_radius<-MM[,8]
+
+  #FM<-data.frame(Input_X,Input_Y,Reference_X,Reference_Y,Reference_radius,MM[,c(1:5)],Comp,Euc_input_dist,Euc_ref_dist, WW)
+
+  FM<-data.frame(Input_X,Input_Y,Reference_X,Reference_Y,Reference_radius,MM[,c(1:5)],Comp,Euc_input_dist,Euc_ref_dist)
+
+
+  P1<-ggplot(data.frame(input), aes(x=x, y=y))+ geom_point(data=data.frame(input), aes(x=x, y=y), color='black',size=0.1) +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), in.r[1], nseg, in.cx[1], in.cy[1])),color="red",size=0.1)+
+    gg_circle(in.r[1], xc=in.cx[1], yc=in.cy[1], color="red") +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), in.r[2], nseg, in.cx[2], in.cy[2])),color="yellow",size=0.1)+
+    gg_circle(in.r[2], xc=in.cx[2], yc=in.cy[2], color="yellow") +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), in.r[3], nseg, in.cx[3], in.cy[3])),color="green",size=0.1)+
+    gg_circle(in.r[3], xc=in.cx[3], yc=in.cy[3], color="green")
+
+
+  P2<-ggplot(data.frame(reference), aes(x=x, y=y))+ geom_point(data=data.frame(reference), aes(x=x, y=y), color='black',size=0.1) +
+    geom_point(data=data.frame(int_inside_center(data.frame(reference), final.r[1], nseg, final.cx[1],final.cy[1])),color="red",size=0.1)+
+    gg_circle(final.r[1], xc=final.cx[1], yc=final.cy[1], color="red") +
+    geom_point(data=data.frame(int_inside_center(data.frame(reference), final.r[2], nseg, final.cx[2],final.cy[2])),color="yellow",size=0.1)+
+    gg_circle(final.r[2], xc=final.cx[2], yc=final.cy[2], color="yellow") +
+    geom_point(data=data.frame(int_inside_center(data.frame(reference), final.r[3], nseg, final.cx[3],final.cy[3])),color="green",size=0.1)+
+    gg_circle(final.r[3], xc=final.cx[3], yc=final.cy[3], color="green")
+
+  try(multiplot(P1, P2, cols=2))
+
+
+  return(FM)
+}
