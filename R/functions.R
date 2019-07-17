@@ -812,18 +812,18 @@ initial_circle<-function(input){
 #'
 #' @description Function to cut x and y coordinate points less than 1% quantile and larger than 99% quantile
 #'
-#' @name focus_data
+#' @name focus_data2
 #' @param data data with x and y coordinate values
 #'
 #' @export
 #'
 #'
-focus_data<-function(data){
+focus_data2<-function(data){
   data.new<-subset(data, quantile(data[,1], 0.01)<data[,1] &
                      data[,1]<quantile(data[,1], 0.99) &
                      quantile(data[,2], 0.01)<data[,2] &
                      data[,2]<quantile(data[,2], 0.99))
-
+  data.new<-data.frame(data.new)
   names(data.new)<-c("x","y")
   return(data.new)
 }
