@@ -830,6 +830,55 @@ focus_data2<-function(data){
 
 
 
+
+#' @title  First plot before starting matching to confirm the circle position.
+#'
+#' @description Draw edge coordiates with designated circles. Circle will be colored in both input and reference
+#'
+#' @name step0_plot
+#' @param input Input image for fixing three circles
+#' @param reference Input image for finding correspondence
+#' @param input_circles Three circles which will be fixed in the input
+#'
+#' @export
+#'
+
+step0_plot<-function(input, reference, input_circles){
+
+  cx1<-input_circles[1,1]
+  cx2<-input_circles[2,1]
+  cx3<-input_circles[3,1]
+  cy1<-input_circles[1,2]
+  cy2<-input_circles[2,2]
+  cy3<-input_circles[3,2]
+  r1<-input_circles[1,3]
+  r2<-input_circles[2,3]
+  r3<-input_circles[3,3]
+
+  P1<-ggplot(data.frame(input), aes(x=x, y=y))+ geom_point(data=data.frame(input), aes(x=x, y=y), color='black',size=0.1) +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), r1, nseg, cx1,cy1)),color="red",size=0.1)+
+    gg_circle(r1, xc=cx1, yc=cy1, color="red") +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), r2, nseg, cx2,cy2)),color="orange",size=0.1)+
+    gg_circle(r2, xc=cx2, yc=cy2, color="orange") +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), r3, nseg, cx3, cy3)),color="green",size=0.1)+
+    gg_circle(r3, xc=cx3, yc=cy3, color="green")
+
+
+  P2<-ggplot(data.frame(reference), aes(x=x, y=y))+ geom_point(data=data.frame(reference), aes(x=x, y=y), color='black',size=0.1) +
+    geom_point(data=data.frame(int_inside_center(data.frame(reference), r1, nseg, cx1,cy1)),color="red",size=0.1)+
+    gg_circle(r1, xc=cx1, yc=cy1, color="red") +
+    geom_point(data=data.frame(int_inside_center(data.frame(reference), r2, nseg, cx2,cy2)),color="orange",size=0.1)+
+    gg_circle(r2, xc=cx2, yc=cy2, color="orange") +
+    geom_point(data=data.frame(int_inside_center(data.frame(reference), r3, nseg, cx3,cy3)),color="green",size=0.1)+
+    gg_circle(r3, xc=cx3, yc=cy3, color="green")
+
+  return(multiplot(P1,P2,cols=2))
+
+}
+
+
+
+
 #' @title  Match input and reference with given circle information in input. The searching area is confined.
 #'
 #' @description Find corresponding areas in reference for fixed circles in input. To reduce the time, it confines the area for candidate circles in reference image.
