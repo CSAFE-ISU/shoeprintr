@@ -1185,3 +1185,45 @@ ROC.data_col<-function(pred_prob, nsame, ndiff, thres, Method){
   D=data.frame(thres, Sen=Sen, one_minus_Spec=one_minus_Spec, Spec=Spec, one_minus_Sen, Method=Method)
   return(D)
 }
+
+#' @title  Calculate AUC, EER, optimal threshold for ROC curves
+#'
+#' @description With the list type of data containing sensitivity and sepecificity values from many thresholds, it calcuates AUC, EER, optiimal threshold
+#' to give the minumum summation of FPR and FNR.
+#'
+#' @name auc_eer_opt.t_generation
+#' @param ROC_list List of sensitivity and sepecificity from many different methods
+#'
+#' @export
+#'
+auc_eer_opt.t_generation<-function(ROC_list){
+
+  auc<-list()
+  eer<-list()
+  opt.t<-list()
+  one_minus_Spec<-list()
+  one_minus_Sen<-list()
+
+
+  for (i in 1:length(ROC_list)){
+    auc[[i]]<-with(ROC_list[[i]], simple_auc(Sen, one_minus_Spec))
+    eer[[i]]<-c(eer.ROC(unique(ROC_list[[i]][, -1])))
+    opt.t[[i]]<-ROC_list[[i]]$thres[which.max(ROC_list[[i]]$Sen + ROC_list[[i]]$Spec)]
+
+    one_minus_Spec[[i]]<-ROC_list[[i]][which(ROC_list[[i]]$thres == opt.t[[i]]),]$one_minus_Spec
+    one_minus_Sen[[i]]<-ROC_list[[i]][which(ROC_list[[i]]$thres == opt.t[[i]]),]$one_minus_Sen
+  }
+
+  auc_combined<-c(do.call(rbind, auc))
+  eer_combined<-c(do.call(rbind, eer))
+  opt.t_combined<-c(do.call(rbind, opt.t))
+  one_minus_Spec_c<-c(do.call(rbind, one_minus_Spec))
+  one_minus_Sen_c<-c(do.call(rbind, one_minus_Sen))
+
+  name<-c("RF-plus-POC-R","RF", "% Overlap on Q","POC-R","POC-P","FMTC")
+  auc_eer_data_summary<-data.frame(name, auc_combined,eer_combined,opt.t_combined,one_minus_Spec_c,one_minus_Sen_c)
+  auc_eer_data_summary2<-auc_eer_data_summary[order(auc_eer_data_summary$auc_combined, decreasing = TRUE), ]
+
+  return(auc_eer_data_summary2)
+
+}
