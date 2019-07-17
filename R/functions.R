@@ -828,6 +828,22 @@ focus_data2<-function(data){
   return(data.new)
 }
 
+#' @title Reverse right side shoe to look like left side shoe
+#'
+#' @description Function to transform coordinate values to look like from the left side shoe
+#'
+#' @name rev_R
+#' @param Data data with x and y coordinate values from right side of shoe
+#'
+#' @export
+#'
+rev_R<-function(Data){
+  newx<-max(Data[,1])-Data[,1]
+  rev_Data<-data.frame(newx, Data[,2])
+  names(rev_Data)<-c("x", "y")
+
+  return(rev_Data)
+}
 
 
 
@@ -1083,3 +1099,5 @@ match_print_subarea<-function(input, reference, input_circles, max_rotation_angl
 
   return(FM)
 }
+
+
