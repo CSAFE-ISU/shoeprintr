@@ -1288,3 +1288,27 @@ eer.ROC<-function(ROCdata){
   eer <- x[1] + a * ( y[1] - x[1] );
 
   return(eer)}
+
+
+
+#' @title  Find three circles
+#'
+#' @description Find three circles with different positions for degraded impressions
+#'
+#' @name initial_circle2
+#' @param input  Questioned impression
+#'
+#' @export
+#'
+initial_circle2<-function(input){
+  circles_dims <- apply(input, 2, function(x) max(x) -  min(x))
+  circle_centers1 <- matrix(c(0.3, 0.8, 0.2, 0.3, 0.7, 0.7), 3,
+                            byrow = TRUE, dimnames = list(NULL, c("x", "y"))) %*% diag(circles_dims)
+
+  circle_centers2 <- circle_centers1 + matrix(c(min(input[,1]), min(input[,1]), min(input[,1]), min(input[,2]),min(input[,2]),min(input[,2])), 3, byrow=FALSE)
+  circle_centers3 <- cbind(circle_centers2, c(50, 50, 50))
+  input_circles<-circle_centers3
+  return(input_circles)
+}
+
+
