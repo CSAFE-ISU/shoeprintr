@@ -1367,3 +1367,113 @@ step0_Q_K_plot<-function(input, reference, circle_in, circle_ref){
   return(multiplot(P1,P2,cols=2))
 
 }
+
+
+
+
+#' @title  Match input and reference with given circle information in input. Circle in the reference will be also fixed.
+#'
+#' @description Match between circle 1 in the input impression vs. circle 1 in the referece impression. Repeat this for circle 2 and circle 3.
+#' This matching function is for comparing degraded impressions to see how worse the method perform when comparing similar regions.
+#'
+#'
+#' @name edge_fix_circle_mat
+#' @param input Input image for fixing three circles
+#' @param reference Input image for finding correspondence
+#' @param input_circles Three circles which will be fixed in the input
+#' @param ref_circles Three circles which will be fixed in the reference too.
+#'
+#' @export
+#'
+edge_fix_circle_mat<-function(input, referece, input_circles, ref_circles){
+
+
+  MM<-NULL
+  in.cx<-NULL
+  in.cy<-NULL
+  in.r<-NULL
+  ref.cx<-NULL
+  ref.cy<-NULL
+  ref.r<-NULL
+  step2_mat<-list()
+  final.cx<-NULL
+  final.cy<-NULL
+  final.cr<-NULL
+  FM<-NULL
+  max_rotation_angle<-30
+  nseg=360
+
+  for ( k in 1:3){
+
+    print(paste("circle",k,"matching"))
+    in.cx[k]<-input_circles[k,1]
+    in.cy[k]<-input_circles[k,2]
+    in.r[k]<-input_circles[k,3]
+
+    circle_in<-data.frame(int_inside_center(data.frame(input), in.r[k], nseg, in.cx[k], in.cy[k]))
+
+
+
+    ref.cx[k]<-ref_circles[k,1]
+    ref.cy[k]<-ref_circles[k,2]
+    ref.r[k]<-ref_circles[k,3]
+
+    circle_ref<-data.frame(int_inside_center(data.frame(reference), ref.r[k], nseg, ref.cx[k],ref.cy[k]))
+
+    step2_mat<-boosted_clique(circle_in, circle_ref, ncross_in_bins = 30, xbins_in = 20,
+                              ncross_in_bin_size = 1, ncross_ref_bins = NULL, xbins_ref = 30,
+                              ncross_ref_bin_size = NULL, eps = 0.75, seed = 1, num_cores = parallel::detectCores()/2,
+                              plot = TRUE, verbose = FALSE, cl = NULL)$clique_stats
+
+    final.cx[k]<-step2_mat[,6]
+    final.cy[k]<-step2_mat[,7]
+    final.r[k]<-step2_mat[,8]
+
+    MM<-rbind(MM,step2_mat)
+
+
+
+  }
+
+  Input_X<-input_circles[,1]
+  Input_Y<-input_circles[,2]
+  Comp<-c('1-2','1-3','2-3')
+  d_in_1<-sqrt((Input_X[1]-Input_X[2])^2+(Input_Y[1]-Input_Y[2])^2)
+  d_in_2<-sqrt((Input_X[1]-Input_X[3])^2+(Input_Y[1]-Input_Y[3])^2)
+  d_in_3<-sqrt((Input_X[2]-Input_X[3])^2+(Input_Y[2]-Input_Y[3])^2)
+  Euc_input_dist<-c(d_in_1,d_in_2,d_in_3)
+  Reference_X<-MM[,6]
+  Reference_Y<-MM[,7]
+  d_ref_1<-sqrt((Reference_X[1]-Reference_X[2])^2+(Reference_Y[1]-Reference_Y[2])^2)
+  d_ref_2<-sqrt((Reference_X[1]-Reference_X[3])^2+(Reference_Y[1]-Reference_Y[3])^2)
+  d_ref_3<-sqrt((Reference_X[2]-Reference_X[3])^2+(Reference_Y[2]-Reference_Y[3])^2)
+  Euc_ref_dist<-c(d_ref_1,d_ref_2,d_ref_3)
+  Reference_radius<-MM[,8]
+
+  #FM<-data.frame(Input_X,Input_Y,Reference_X,Reference_Y,Reference_radius,MM[,c(1:5)],Comp,Euc_input_dist,Euc_ref_dist, WW)
+
+  FM<-data.frame(Input_X,Input_Y,Reference_X,Reference_Y,Reference_radius,MM[,c(1:5)],Comp,Euc_input_dist,Euc_ref_dist)
+
+
+  P1<-ggplot(data.frame(input), aes(x=x, y=y))+ geom_point(data=data.frame(input), aes(x=x, y=y), color='black',size=0.1) +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), in.r[1], nseg, in.cx[1], in.cy[1])),color="red",size=0.1)+
+    gg_circle(in.r[1], xc=in.cx[1], yc=in.cy[1], color="red") +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), in.r[2], nseg, in.cx[2], in.cy[2])),color="yellow",size=0.1)+
+    gg_circle(in.r[2], xc=in.cx[2], yc=in.cy[2], color="yellow") +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), in.r[3], nseg, in.cx[3], in.cy[3])),color="green",size=0.1)+
+    gg_circle(in.r[3], xc=in.cx[3], yc=in.cy[3], color="green")
+
+
+  P2<-ggplot(data.frame(reference), aes(x=x, y=y))+ geom_point(data=data.frame(reference), aes(x=x, y=y), color='black',size=0.1) +
+    geom_point(data=data.frame(int_inside_center(data.frame(reference), final.r[1], nseg, final.cx[1],final.cy[1])),color="red",size=0.1)+
+    gg_circle(final.r[1], xc=final.cx[1], yc=final.cy[1], color="red") +
+    geom_point(data=data.frame(int_inside_center(data.frame(reference), final.r[2], nseg, final.cx[2],final.cy[2])),color="yellow",size=0.1)+
+    gg_circle(final.r[2], xc=final.cx[2], yc=final.cy[2], color="yellow") +
+    geom_point(data=data.frame(int_inside_center(data.frame(reference), final.r[3], nseg, final.cx[3],final.cy[3])),color="green",size=0.1)+
+    gg_circle(final.r[3], xc=final.cx[3], yc=final.cy[3], color="green")
+
+  try(multiplot(P1, P2, cols=2))
+
+
+  return(FM)
+}
