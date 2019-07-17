@@ -1312,3 +1312,58 @@ initial_circle2<-function(input){
 }
 
 
+
+#' @title  Draw plot of two shoe impressions with each designated circles
+#'
+#' @description Draw plot of questioned and reference shoe with each designated circles.
+#'
+#' @name step0_Q_K_plot
+#' @param input  Questioned impression (Q)
+#' @param reference  Known impression (K)
+#' @param circle_in  Circle information for Q
+#' @param circle_ref  Circle information for K
+#'
+#' @export
+#'
+step0_Q_K_plot<-function(input, reference, circle_in, circle_ref){
+
+  cx1<-circle_in[1,1]
+  cx2<-circle_in[2,1]
+  cx3<-circle_in[3,1]
+  cy1<-circle_in[1,2]
+  cy2<-circle_in[2,2]
+  cy3<-circle_in[3,2]
+  r1<-circle_in[1,3]
+  r2<-circle_in[2,3]
+  r3<-circle_in[3,3]
+
+  P1<-ggplot(data.frame(input), aes(x=x, y=y))+ geom_point(data=data.frame(input), aes(x=x, y=y), color='black',size=0.1) +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), r1, nseg, cx1,cy1)),color="red",size=0.1)+
+    gg_circle(r1, xc=cx1, yc=cy1, color="red") +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), r2, nseg, cx2,cy2)),color="orange",size=0.1)+
+    gg_circle(r2, xc=cx2, yc=cy2, color="orange") +
+    geom_point(data=data.frame(int_inside_center(data.frame(input), r3, nseg, cx3, cy3)),color="green",size=0.1)+
+    gg_circle(r3, xc=cx3, yc=cy3, color="green")
+
+
+  cx1<-circle_ref[1,1]
+  cx2<-circle_ref[2,1]
+  cx3<-circle_ref[3,1]
+  cy1<-circle_ref[1,2]
+  cy2<-circle_ref[2,2]
+  cy3<-circle_ref[3,2]
+  r1<-circle_ref[1,3]
+  r2<-circle_ref[2,3]
+  r3<-circle_ref[3,3]
+
+  P2<-ggplot(data.frame(reference), aes(x=x, y=y))+ geom_point(data=data.frame(reference), aes(x=x, y=y), color='black',size=0.1) +
+    geom_point(data=data.frame(int_inside_center(data.frame(reference), r1, nseg, cx1,cy1)),color="red",size=0.1)+
+    gg_circle(r1, xc=cx1, yc=cy1, color="red") +
+    geom_point(data=data.frame(int_inside_center(data.frame(reference), r2, nseg, cx2,cy2)),color="orange",size=0.1)+
+    gg_circle(r2, xc=cx2, yc=cy2, color="orange") +
+    geom_point(data=data.frame(int_inside_center(data.frame(reference), r3, nseg, cx3,cy3)),color="green",size=0.1)+
+    gg_circle(r3, xc=cx3, yc=cy3, color="green")
+
+  return(multiplot(P1,P2,cols=2))
+
+}
