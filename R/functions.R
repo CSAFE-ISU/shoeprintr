@@ -1148,3 +1148,40 @@ match_print_subarea<-function(input, reference, input_circles, max_rotation_angl
 }
 
 
+#' @title  Calculate sensitivity and specificity at different threshold for drawing ROC curves
+#'
+#' @description Using prediction by some methods, calculate sensitivity and specificity at different threshold for drawing ROC curves.
+#'
+#' @name ROC.data_col
+#' @param nsame number of mates
+#' @param ndiff number of non-mates
+#' @param thres Threshold for ROC curve
+#' @param Method method name
+#'
+#' @export
+#'
+ROC.data_col<-function(pred_prob, nsame, ndiff, thres, Method){
+
+  Sen<-NULL
+  Spec<-NULL
+  one_minus_Spec<-NULL
+  one_minus_Sen<-NULL
+
+  ntotal=nsame+ndiff
+
+  for (i in 1:length(thres)){
+    A<-sum(pred_prob[1:nsame]>=thres[i])   # true same - pred same : A
+    C<-sum(pred_prob[1:nsame]<thres[i])   # true same - pred diff : C
+    B<-sum(pred_prob[(nsame+1):ntotal]>=thres[i]) # true diff - pred same : B
+    D<-sum(pred_prob[(nsame+1):ntotal]<thres[i]) # true diff - pred diff : D
+
+    Sen[i]<-A/(A+C)
+    Spec[i]<-D/(B+D)
+    one_minus_Spec[i]<-(1-Spec[i])
+    one_minus_Sen[i]<-(1-Sen[i])
+
+  }
+
+  D=data.frame(thres, Sen=Sen, one_minus_Spec=one_minus_Spec, Spec=Spec, one_minus_Sen, Method=Method)
+  return(D)
+}
