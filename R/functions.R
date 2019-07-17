@@ -1227,3 +1227,21 @@ auc_eer_opt.t_generation<-function(ROC_list){
   return(auc_eer_data_summary2)
 
 }
+
+
+#' @title  Calculate AUC
+#'
+#' @description Calculate AUC with information of TPR and FPR
+#'
+#' @name simple_auc
+#' @param TPR True positive rate
+#' @param FPR False positive rate
+#'
+#' @export
+#'
+simple_auc<-function(TPR, FPR){
+  # inputs already sorted, best scores first
+  dFPR <- c(diff(FPR), 0)
+  dTPR <- c(diff(TPR), 0)
+  sum(TPR * dFPR) + sum(dTPR * dFPR)/2
+}
