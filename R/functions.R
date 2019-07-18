@@ -1477,3 +1477,47 @@ edge_fix_circle_mat<-function(input, referece, input_circles, ref_circles){
 
   return(FM)
 }
+
+
+
+#' @title  Summarize MC-COMP macthing across three circles
+#'
+#' @description Get average of five similarity features and standard deviaitions of rotation angle estimations across three circle matching.
+#'
+#'
+#' @name summarize_list_match
+#' @param list_mat Matching result as list type
+#' @param mat_class Class either KM or KNM
+#' @param size the size of the shoe
+#'
+#' @export
+#'
+summarize_list_match<-function(list_mat, mat_class, size){
+  mat<-list_mat
+  class<-mat_class
+
+
+  rbind_mat<-do.call(base::rbind, mat)
+  number<-nrow(rbind_mat)/3 #10
+
+  rbind_mat$abs_Euc_diff<-abs(rbind_mat$Euc_input_dist-rbind_mat$Euc_ref_dist)
+  rbind_mat$Mat<- class
+  rbind_mat$comp<-factor(rep(1:number, each=3))
+  sum_mat<-rbind_mat[,c(6,7,8,9,10,14,15,16)]
+
+
+  #average score
+  ave_mat <- ddply(sum_mat, c("comp"), summarise,
+                   class=mat_class,
+                   size=size,
+                   mean_clique_size=mean(clique_size),
+                   sd_rotation_angle = sd(rotation_angle, na.rm = TRUE),
+                   mean_reference_overlap=mean(reference_overlap),
+                   mean_input_overlap=mean(input_overlap),
+                   mean_med_dist_euc=mean(med_dist_euc),
+                   mean_Euc_diff=mean(abs_Euc_diff)
+
+  )
+
+  return(ave_mat)
+}
