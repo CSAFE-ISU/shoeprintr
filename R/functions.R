@@ -797,7 +797,7 @@ gg_circle<-function(r, xc, yc, color="black", fill=NA, ...) {
 #'
 initial_circle<-function(input){
   circles_dims <- apply(input, 2, function(x) max(x) -  min(x))
-  circle_centers1 <- matrix(c(0.3, 0.8, 0.2, 0.4, 0.7, 0.7), 3,
+  circle_centers1 <- matrix(c(0.3, 0.75, 0.2, 0.25, 0.75, 0.65), 3,
                             byrow = TRUE, dimnames = list(NULL, c("x", "y"))) %*% diag(circles_dims)
 
   circle_centers2 <- circle_centers1 + matrix(c(min(input[,1]), min(input[,1]), min(input[,1]), min(input[,2]),min(input[,2]),min(input[,2])), 3, byrow=FALSE)
